@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">MyTravelPlanning</string>
+    <string name="empty_message">Não há viagens cadastradas ainda. Comece agora mesmo cadastrando o seu próximo destino!</string>
+    <string name="create_travel_message">Crie um roteiro de viagem</string>
+    <string name="travels_listing_title">Suas próximas viagens</string>
+    <string name="travels_listing_departure">Saída em %1$s</string>
+    <string name="travels_listing_arrival">Volta em %1$s</string>
+    <string name="travels_listing_places_registered">%d roteiros cadastrados</string>
+    <string name="travel_duration_title">Viagem de %d dias</string>
+    <string name="login_title">Entre já</string>
+    <string name="login_button">Entrar</string>
+    <string name="create_travel_label_description">Descrição</string>
+    <string name="create_travel_starting_point_name">Saindo de</string>
+    <string name="create_travel_ending_point_name">Indo para</string>
+    <string name="create_travel_duration_in_days">Tempo de viagem em dias</string>
+    <string name="create_travel_label_travel_initial_date">Data da viagem</string>
+    <string name="create_travel_label_travel_final_date">Data de retorno</string>
+    <string name="create_travel_button">Gerar roteiro de viagem</string>
+    <string name="edit_travel_button">Salvar</string>
+    <string name="connection_error_message">Aconteceu algo de errado</string>
+    <string name="connection_error_try_again">Tentar novamente</string>
+</resources>
