@@ -22,12 +22,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.pedro.solutions.mytravelplanning.R
+import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelScreen
+import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreen
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("RestrictedApi")
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun AppNavHost(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val backStackEntries by navController.currentBackStack.collectAsState()
     val isOnMainScreen =  false
@@ -67,9 +71,14 @@ fun MainScreen(modifier: Modifier = Modifier) {
 
             composable<TravelsRoutes.CreateTravelScreen> { backStackEntry ->
                 val travelId: TravelsRoutes.CreateTravelScreen = backStackEntry.toRoute()
-                CreateTravelScreen(travelId=travelId.id) {
+                CreateTravelScreen(travelId=travelId.id, onTravelCreated = {
                     navController.popBackStack()
-                }
+                    navController.navigate(TravelsRoutes.MainScreen(Json.encodeToString(it)))
+                })
+            }
+            composable<TravelsRoutes.MainScreen> { backStackEntry ->
+                val travelGuide = backStackEntry.toRoute<TravelsRoutes.MainScreen>().travelGuideJson
+                MainScreen(travelGuide=Json.decodeFromString<TravelGuide>(travelGuide))
             }
         }
     }

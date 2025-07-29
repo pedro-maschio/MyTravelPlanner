@@ -7,5 +7,6 @@ data class CreateTravelUiState(
     var isLoading: Boolean = false,
     val showStartDateModal: Boolean = false,
     val showEndDateModal: Boolean = false,
-    val showErrorScreen: Boolean = false
+    val showErrorScreen: Boolean = false,
+    val errorMessage: String = ""
 )

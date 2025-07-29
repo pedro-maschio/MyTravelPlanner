@@ -1,4 +1,12 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.main
 
-class MainScreen {
+import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
+
+@Composable
+fun MainScreen(modifier: Modifier = Modifier, travelGuide: TravelGuide?) {
+    if(travelGuide == null) return
+    Log.d("PEDRO123", travelGuide.toString())
 }

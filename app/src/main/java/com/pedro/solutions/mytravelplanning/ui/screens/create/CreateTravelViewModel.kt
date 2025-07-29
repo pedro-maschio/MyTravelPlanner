@@ -4,9 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.pedro.solutions.mytravelplanning.BuildConfig
 import com.pedro.solutions.mytravelplanning.data.models.ChatRequest
 import com.pedro.solutions.mytravelplanning.data.models.Message
+import com.pedro.solutions.mytravelplanning.data.models.openai.ErrorMessage
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -63,9 +63,10 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
                   ]
                 }
 
-                If it is not possible to generate a guide (e.g. too short time or impossible route), return:
+                If it is not possible to generate a guide (e.g. too short time or impossible route), return an error message
+                in the format:
                 {
-                  "days": []
+                  "message": "Concise explanation for WHY it is not possible to generate a guide."
                 }
 
                 Keep responses concise and useful. Do not include explanations or additional text.
@@ -82,13 +83,18 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
             try {
                 _uiState.update { it.copy(isLoading = true) }
                 val response = repository.getChatResponse(request)
-                val content = response.choices[0].message.content
-                val travelGuide = Gson(). fromJson(content, TravelGuide::class.java)
-                travelGuide.days.forEach { Log.d("PEDRO123", it.toString()) }
-                _uiState.update { it.copy(showErrorScreen = false) }
+                val content = response.choices[0].message?.content
+                val travelGuide = Gson().fromJson(content, TravelGuide::class.java)
+                Log.d("PEDRO123", travelGuide.toString())
+                if(travelGuide.days == null) {
+                    val errorMessage = Gson().fromJson(content, ErrorMessage::class.java)
+                    _uiState.update { it.copy(showErrorScreen = false, errorMessage = errorMessage.message   ) }
+                } else {
+                    _uiState.update { it.copy(showErrorScreen = false, errorMessage = "") }
+                    _uiEvents.emit(CreateTravelEvents.GoToListing(travelGuide))
+                }
             } catch (e: Exception) {
                 _uiState.update { it.copy(showErrorScreen = true) }
-                Log.d("PEDRO123", e.message.orEmpty())
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
             }
