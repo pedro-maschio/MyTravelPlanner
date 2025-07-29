@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 
 object TravelsRoutes {
     @Serializable
+    data object IntroScreen
+
+    @Serializable
     data class CreateTravelScreen(val id: Int? = null)
 
     @Serializable

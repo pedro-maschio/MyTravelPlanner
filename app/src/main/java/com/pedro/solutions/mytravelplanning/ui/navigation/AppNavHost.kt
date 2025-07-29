@@ -22,11 +22,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.pedro.solutions.mytravelplanning.R
-import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
+import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
 import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelScreen
+import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreen
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("RestrictedApi")
@@ -34,25 +36,29 @@ import kotlinx.serialization.json.Json
 fun AppNavHost(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val backStackEntries by navController.currentBackStack.collectAsState()
-    val isOnMainScreen =  false
+    val isOnMainScreen = false
+    val repository: TravelsRepository = koinInject()
+    val startDestination =
+        if (repository.isShownIntroduction()) TravelsRoutes.MainScreen else TravelsRoutes.IntroScreen
+
     Scaffold(modifier = modifier, topBar = {
-            CenterAlignedTopAppBar(title = {
-                if(isOnMainScreen) {
-                    Text(text = stringResource(R.string.travels_listing_title))
-                }
-            }, navigationIcon = {
-                if(!isOnMainScreen) {
-                    IconButton(onClick = {
-                        navController.popBackStack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
-                        )
-                    }
+        CenterAlignedTopAppBar(title = {
+            if (isOnMainScreen) {
+                Text(text = stringResource(R.string.travels_listing_title))
+            }
+        }, navigationIcon = {
+            if (!isOnMainScreen) {
+                IconButton(onClick = {
+                    navController.popBackStack()
+                }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null
+                    )
                 }
             }
-            )
+        }
+        )
     }, floatingActionButton = {
         if (isOnMainScreen) {
             FloatingActionButton(onClick = {
@@ -66,19 +72,27 @@ fun AppNavHost(modifier: Modifier = Modifier) {
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
-            startDestination = TravelsRoutes.CreateTravelScreen(),
+            startDestination = startDestination,
         ) {
+
+            composable<TravelsRoutes.IntroScreen> { navBackStackEntry ->
+                IntroScreen {
+                    navController.popBackStack()
+                    navController.navigate(TravelsRoutes.CreateTravelScreen())
+                }
+            }
 
             composable<TravelsRoutes.CreateTravelScreen> { backStackEntry ->
                 val travelId: TravelsRoutes.CreateTravelScreen = backStackEntry.toRoute()
-                CreateTravelScreen(travelId=travelId.id, onTravelCreated = {
+                CreateTravelScreen(travelId = travelId.id, onTravelCreated = {
                     navController.popBackStack()
                     navController.navigate(TravelsRoutes.MainScreen(Json.encodeToString(it)))
                 })
             }
             composable<TravelsRoutes.MainScreen> { backStackEntry ->
                 val travelGuide = backStackEntry.toRoute<TravelsRoutes.MainScreen>().travelGuideJson
-                MainScreen(travelGuide=Json.decodeFromString<TravelGuide>(travelGuide))
+               //travelGuide = Json.decodeFromString<TravelGuide>(travelGuide)
+                MainScreen()
             }
         }
     }

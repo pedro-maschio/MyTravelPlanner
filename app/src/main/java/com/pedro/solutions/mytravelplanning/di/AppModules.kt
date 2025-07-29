@@ -4,6 +4,7 @@ import com.pedro.solutions.mytravelplanning.data.network.ChatGptApi
 import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
 import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelViewModel
 import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreenViewModel
+import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroViewModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.core.module.dsl.viewModelOf
@@ -15,6 +16,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 val appModules = module {
     viewModelOf(::CreateTravelViewModel)
     viewModelOf(::MainScreenViewModel)
+    viewModelOf(::IntroViewModel)
 
     single {
         val BASE_URL = "https://api.openai.com/v1/"
@@ -35,5 +37,5 @@ val appModules = module {
         get<Retrofit>().create(ChatGptApi::class.java)
     }
 
-    single { TravelsRepository(get()) }
+    single { TravelsRepository(get(), get()) }
 }

@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, travelGuide: TravelGuide?) {
-    if(travelGuide == null) return
-    Log.d("PEDRO123", travelGuide.toString())
+fun MainScreen(modifier: Modifier = Modifier) {
+
+
 }
