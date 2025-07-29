@@ -22,11 +22,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.pedro.solutions.mytravelplanning.R
+import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
 import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelScreen
+import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelDetailScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreen
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 
@@ -39,7 +40,7 @@ fun AppNavHost(modifier: Modifier = Modifier) {
     val isOnMainScreen = false
     val repository: TravelsRepository = koinInject()
     val startDestination =
-        if (repository.isShownIntroduction()) TravelsRoutes.MainScreen else TravelsRoutes.IntroScreen
+        if (repository.isShownIntroduction()) TravelsRoutes.CreateTravelScreen() else TravelsRoutes.IntroScreen
 
     Scaffold(modifier = modifier, topBar = {
         CenterAlignedTopAppBar(title = {
@@ -85,13 +86,16 @@ fun AppNavHost(modifier: Modifier = Modifier) {
             composable<TravelsRoutes.CreateTravelScreen> { backStackEntry ->
                 val travelId: TravelsRoutes.CreateTravelScreen = backStackEntry.toRoute()
                 CreateTravelScreen(travelId = travelId.id, onTravelCreated = {
-                    navController.popBackStack()
-                    navController.navigate(TravelsRoutes.MainScreen(Json.encodeToString(it)))
+                    navController.navigate(TravelsRoutes.TravelDetailScreen(Json.encodeToString(it)))
                 })
             }
+
+            composable<TravelsRoutes.TravelDetailScreen> { backStackEntry ->
+                val travelGuide = backStackEntry.toRoute<TravelsRoutes.TravelDetailScreen>().travelGuideJson
+                TravelDetailScreen(travelGuide = Json.decodeFromString<TravelGuide>(travelGuide))
+            }
             composable<TravelsRoutes.MainScreen> { backStackEntry ->
-                val travelGuide = backStackEntry.toRoute<TravelsRoutes.MainScreen>().travelGuideJson
-               //travelGuide = Json.decodeFromString<TravelGuide>(travelGuide)
+
                 MainScreen()
             }
         }

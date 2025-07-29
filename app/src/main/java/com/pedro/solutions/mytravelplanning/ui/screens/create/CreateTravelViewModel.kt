@@ -24,10 +24,8 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
     private val _uiEvents = MutableSharedFlow<CreateTravelEvents>()
     val uiEvents: SharedFlow<CreateTravelEvents> = _uiEvents.asSharedFlow()
 
-    private fun setLoading() = _uiState.update { it.copy(isLoading = true) }
+    private fun showLoading() = _uiState.update { it.copy(isLoading = true) }
     private fun hideLoading() = _uiState.update { it.copy(isLoading = false) }
-
-
     fun createTravel() {
         val startingPoint = _uiState.value.travel.startingPoint
         val endingPoint = _uiState.value.travel.endingPoint
@@ -36,52 +34,45 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
             messages = listOf(
                 Message(
                     "system", """
-                You are a helpful travel assistant specialized in generating car trip guides.
-                
-                You will receive a request in the format: 
-                "Create a travel guide that starts from [STARTING LOCATION] to [ENDING LOCATION] and must be completed in [DURATION] day(s)."
-                
-                Your response must be a **valid JSON object** that strictly follows this schema:
-                
-                {
-                  "days": [
-                    {
-                      "title": "Dia 1 – Brasília → Cavalcante (320 km, ~4h30 de viagem)",
-                      "activities": [
-                        "Saída cedo de Brasília (6h-7h da manhã).",
-                        "Parada em Alto Paraíso para um café e lanche no Ateliê da Pizza.",
-                        "Chegada em Cavalcante por volta do meio-dia."
-                      ]
-                    },
-                    {
-                      "title": "Dia 2 – Cavalcante → Terra Ronca (180 km, ~4h de viagem, estradas de terra)",
-                      "activities": [
-                        "Café da manhã reforçado e saída cedo (~7h).",
-                        "Viagem até São Domingos (GO), base para o Parque Estadual Terra Ronca."
-                      ]
-                    }
-                  ]
-                }
+                Você é um assistente de viagens que cria roteiros detalhados saindo de $startingPoint. Gere um roteiro em formato JSON, sem explicações adicionais, seguindo estritamente esta estrutura:
+                 {
+                   "days": [
+                     {
+                       "title": "Dia 1: <resumo do dia>",
+                       "activities": [
+                         "<atividade 1>",
+                         "<atividade 2>",
+                         "<atividade 3>"
+                       ]
+                     }
+                   ]
+                 }
+                Regras:
+                Cada dia deve ter um título resumido.
+                Cada dia deve ter entre 3 e 6 atividades.
+                O roteiro deve ser para uma viagem de carro saindo de $startingPoint.
+                Personalize conforme o destino, incluindo restaurantes, hospedagens e pontos turísticos relevantes.
+                Não adicione texto fora do JSON.
 
-                If it is not possible to generate a guide (e.g. too short time or impossible route), return an error message
-                in the format:
+                Exemplo de entrada:
+                "Gerar roteiro de 3 dias para Pirenópolis para um casal que gosta de natureza e boa gastronomia."
+                Se a duracao for maior do que o necessário, crie um roteiro de viagem ainda assim, adicionando mais atividades, destinos próximos ou dias livres para descansar. Apenas retorne erro se a viagem é fisicamente impossível (por exemplo, não há rotas de carro)
+                Em caso de erro, retorne um JSON estritamente neste formato:
                 {
-                  "message": "Concise explanation for WHY it is not possible to generate a guide."
+                  "message": "Explicacao concisa do PORQUE não ser possível gerar o roteiro."
                 }
-
-                Keep responses concise and useful. Do not include explanations or additional text.
             """.trimIndent()
                 ),
                 Message(
                     "user",
-                    "Create a travel guide that starts from $startingPoint to $endingPoint and must be completed in $duration day ${if (duration != "1") "s" else ""}."
+                    "Crie um roteiro de viagem que comeca em $startingPoint até $endingPoint e deve ser completada em $duration dia${if (duration != "1") "s" else ""}."
                 )
             )
         )
 
         viewModelScope.launch {
             try {
-                _uiState.update { it.copy(isLoading = true) }
+                showLoading()
                 val response = repository.getChatResponse(request)
                 val content = response.choices[0].message?.content
                 val travelGuide = Gson().fromJson(content, TravelGuide::class.java)
@@ -96,7 +87,7 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
             } catch (e: Exception) {
                 _uiState.update { it.copy(showErrorScreen = true) }
             } finally {
-                _uiState.update { it.copy(isLoading = false) }
+                hideLoading()
             }
         }
     }
