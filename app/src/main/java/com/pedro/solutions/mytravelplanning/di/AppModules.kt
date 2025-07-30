@@ -7,6 +7,7 @@ import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
 import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelViewModel
 import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreenViewModel
 import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroViewModel
+import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelDetailViewModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidApplication
@@ -21,14 +22,15 @@ val appModules = module {
     viewModelOf(::CreateTravelViewModel)
     viewModelOf(::MainScreenViewModel)
     viewModelOf(::IntroViewModel)
+    viewModelOf(::TravelDetailViewModel)
 
     single {
         Room.databaseBuilder(androidApplication(), TravelDatabase::class.java, "travel_database").build()
     }
 
     single {
-        val dialysisDatabase = get<TravelDatabase>()
-        dialysisDatabase.travelDao()
+        val travelDatabase = get<TravelDatabase>()
+        travelDatabase.travelDao()
     }
 
     single {

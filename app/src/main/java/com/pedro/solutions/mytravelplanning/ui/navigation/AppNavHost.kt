@@ -26,6 +26,7 @@ import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
 import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelDetailScreen
+import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelItem
 import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreen
 import kotlinx.serialization.json.Json
@@ -92,7 +93,14 @@ fun AppNavHost(modifier: Modifier = Modifier) {
 
             composable<TravelsRoutes.TravelDetailScreen> { backStackEntry ->
                 val travelGuide = backStackEntry.toRoute<TravelsRoutes.TravelDetailScreen>().travelGuideJson
-                TravelDetailScreen(travelGuide = Json.decodeFromString<TravelGuide>(travelGuide))
+                val travelItems = mutableListOf<TravelItem>()
+                Json.decodeFromString<TravelGuide>(travelGuide).days?.forEachIndexed { index, item ->
+                    travelItems.add(TravelItem.Day(index = index, title = item?.title.orEmpty()))
+                    item?.activities?.forEach { activity ->
+                        travelItems.add(TravelItem.Activity(activity))
+                    }
+                }
+                TravelDetailScreen(travelItems = travelItems )
             }
             composable<TravelsRoutes.MainScreen> { backStackEntry ->
 

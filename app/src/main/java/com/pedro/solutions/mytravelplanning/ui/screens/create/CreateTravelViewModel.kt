@@ -100,7 +100,17 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
         _uiState.update { it.copy(travel = it.travel.copy(endingPoint = name)) }
     }
 
+    fun hideDropDown() {
+        _uiState.update { it.copy(isDropDownMenuShowing = false) }
+    }
+    fun showDropDown() {
+        _uiState.update { it.copy(isDropDownMenuShowing = true) }
+    }
+
     fun updateDuration(duration: String) {
+        if(duration != _uiState.value.travel.durationInDays) {
+            hideDropDown()
+        }
         _uiState.update { it.copy(travel = it.travel.copy(durationInDays = duration)) }
     }
 

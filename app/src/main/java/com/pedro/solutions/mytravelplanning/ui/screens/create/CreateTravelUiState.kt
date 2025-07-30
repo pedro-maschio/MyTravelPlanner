@@ -8,5 +8,6 @@ data class CreateTravelUiState(
     val showStartDateModal: Boolean = false,
     val showEndDateModal: Boolean = false,
     val showErrorScreen: Boolean = false,
+    val isDropDownMenuShowing: Boolean = false,
     val errorMessage: String = ""
 )

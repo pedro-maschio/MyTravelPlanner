@@ -1,10 +1,7 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.create
 
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,14 +23,13 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.ConnectionError
@@ -50,12 +46,11 @@ fun CreateTravelScreen(
 ) {
 
     val viewModel: CreateTravelViewModel = koinViewModel()
-    val state = viewModel.uiState.collectAsState()
-    val isDropDownMenuShowing = remember { mutableStateOf(false) }
+    val state = viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.uiEvents.collectLatest {
-            when(it) {
+            when (it) {
                 is CreateTravelEvents.GoToListing -> onTravelCreated(it.travelGuide)
             }
         }
@@ -84,7 +79,8 @@ fun CreateTravelScreen(
             Spacer(modifier = Modifier.height(DimenThree))
 
             Text(text = stringResource(R.string.create_travel_starting_point_name))
-            TextField(modifier = Modifier.fillMaxWidth(),
+            TextField(
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(size = DimenTwo),
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = Color.Transparent,
@@ -97,7 +93,8 @@ fun CreateTravelScreen(
             Spacer(modifier = Modifier.height(DimenTwo))
 
             Text(text = stringResource(R.string.create_travel_ending_point_name))
-            TextField(modifier = Modifier.fillMaxWidth(),
+            TextField(
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(size = DimenTwo),
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = Color.Transparent,
@@ -112,50 +109,78 @@ fun CreateTravelScreen(
             Text(text = stringResource(R.string.create_travel_duration_in_days))
 
 
-            Box(modifier=Modifier.clickable {
-                isDropDownMenuShowing.value = true
+            Box(modifier = Modifier.clickable {
+                viewModel.showDropDown()
             }) {
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusable(false),
-                enabled = false,
-                shape = RoundedCornerShape(size = DimenTwo),
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    disabledTextColor = Color.Black
-                ),
-                value = state.value.travel.durationInDays,
-                trailingIcon = {
-                    Icon(Icons.Filled.ArrowDropDown, null)
-                },
-                onValueChange = {},
-                readOnly = true,
-            )
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusable(false),
+                    enabled = false,
+                    shape = RoundedCornerShape(size = DimenTwo),
+                    colors = TextFieldDefaults.colors(
+                        disabledTextColor = Color.White,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    value = state.value.travel.durationInDays,
+                    trailingIcon = {
+                        Icon(Icons.Filled.ArrowDropDown, null)
+                    },
+                    onValueChange = {},
+                    readOnly = true,
+                )
             }
 
-            DropdownMenu(expanded = isDropDownMenuShowing.value, onDismissRequest = {
-                isDropDownMenuShowing.value = false
-            }) {
-                DropdownMenuItem(text = { Text("1 dia") }, onClick = {
-                    viewModel.updateDuration("1")
-                })
-                DropdownMenuItem(text = { Text("2 dias") }, onClick = {
-                    viewModel.updateDuration("2")
-                })
-                DropdownMenuItem(text = { Text("7 dias") }, onClick = {
-                    viewModel.updateDuration("7")
-                })
-                DropdownMenuItem(text = { Text("14 dias") }, onClick = {
-                    viewModel.updateDuration("14")
-                })
+            Box {
+                DropdownMenu(expanded = state.value.isDropDownMenuShowing, onDismissRequest = {
+                    viewModel.hideDropDown()
+                }) {
+                    DropdownMenuItem(
+                        text = { Text(pluralStringResource(R.plurals.create_travel_days, 1, 1)) },
+                        onClick = {
+                            viewModel.updateDuration("1")
+                        })
+                    DropdownMenuItem(text = {
+                        Text(
+                            pluralStringResource(
+                                R.plurals.create_travel_days,
+                                2,
+                                2
+                            )
+                        )
+                    }, onClick = {
+                        viewModel.updateDuration("2")
+                    })
+                    DropdownMenuItem(text = {
+                        Text(
+                            pluralStringResource(
+                                R.plurals.create_travel_days,
+                                7,
+                                7
+                            )
+                        )
+                    }, onClick = {
+                        viewModel.updateDuration("7")
+                    })
+                    DropdownMenuItem(text = {
+                        Text(
+                            pluralStringResource(
+                                R.plurals.create_travel_days,
+                                14,
+                                14
+                            )
+                        )
+                    }, onClick = {
+                        viewModel.updateDuration("14")
+                    })
+                }
             }
 
             Spacer(modifier = Modifier.height(DimenTwo))
 
-            Text(text = state.value.errorMessage.orEmpty())
+            Text(text = state.value.errorMessage)
         }
         Button(modifier = Modifier.align(Alignment.End), onClick = {
             viewModel.createTravel()
