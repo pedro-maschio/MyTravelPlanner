@@ -1,4 +1,4 @@
-package com.pedro.solutions.mytravelplanning.ui.screens.create
+package com.pedro.solutions.mytravelplanning.ui.screens.generate
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,16 +16,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CreateTravelViewModel(private val repository: TravelsRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(CreateTravelUiState())
+class GenerateTravelViewModel(private val repository: TravelsRepository) : ViewModel() {
+    private val _uiState = MutableStateFlow(GenerateTravelUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val _uiEvents = MutableSharedFlow<CreateTravelEvents>()
-    val uiEvents: SharedFlow<CreateTravelEvents> = _uiEvents.asSharedFlow()
+    private val _uiEvents = MutableSharedFlow<GenerateTravelEvents>()
+    val uiEvents: SharedFlow<GenerateTravelEvents> = _uiEvents.asSharedFlow()
 
-    private fun showLoading() = _uiState.update { it.copy(isLoading = true) }
-    private fun hideLoading() = _uiState.update { it.copy(isLoading = false) }
-    fun createTravel() {
+    fun generateTravel() {
         val startingPoint = _uiState.value.travel.startingPoint
         val endingPoint = _uiState.value.travel.endingPoint
         val duration = _uiState.value.travel.durationInDays
@@ -80,7 +78,7 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
                     _uiState.update { it.copy(showErrorScreen = false, errorMessage = errorMessage.message   ) }
                 } else {
                     _uiState.update { it.copy(showErrorScreen = false, errorMessage = "") }
-                    _uiEvents.emit(CreateTravelEvents.GoToListing(travelGuide))
+                    _uiEvents.emit(GenerateTravelEvents.GoToListing(travelGuide))
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(showErrorScreen = true) }
@@ -89,6 +87,9 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
             }
         }
     }
+
+    private fun showLoading() = _uiState.update { it.copy(isLoading = true) }
+    private fun hideLoading() = _uiState.update { it.copy(isLoading = false) }
 
     fun updateStartingPoint(name: String) {
         _uiState.update { it.copy(travel = it.travel.copy(startingPoint = name)) }
@@ -111,9 +112,4 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
         }
         _uiState.update { it.copy(travel = it.travel.copy(durationInDays = duration)) }
     }
-
-    fun updateDetails(details: String) {
-        _uiState.update { it.copy(it.travel.copy(details = details)) }
-    }
-
 }

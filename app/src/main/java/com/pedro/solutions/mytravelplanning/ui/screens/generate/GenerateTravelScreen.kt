@@ -1,4 +1,4 @@
-package com.pedro.solutions.mytravelplanning.ui.screens.create
+package com.pedro.solutions.mytravelplanning.ui.screens.generate
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
@@ -41,17 +41,17 @@ import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun CreateTravelScreen(
-    modifier: Modifier = Modifier, travelId: Int? = null, onTravelCreated: (TravelGuide) -> Unit
+fun GenerateTravelScreen(
+    modifier: Modifier = Modifier, travelId: Int? = null, onTravelGenerated: (TravelGuide) -> Unit
 ) {
 
-    val viewModel: CreateTravelViewModel = koinViewModel()
+    val viewModel: GenerateTravelViewModel = koinViewModel()
     val state = viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.uiEvents.collectLatest {
             when (it) {
-                is CreateTravelEvents.GoToListing -> onTravelCreated(it.travelGuide)
+                is GenerateTravelEvents.GoToListing -> onTravelGenerated(it.travelGuide)
             }
         }
     }
@@ -59,7 +59,7 @@ fun CreateTravelScreen(
 
     if (state.value.showErrorScreen || state.value.isLoading) {
         ConnectionError(isShowing = state.value.showErrorScreen) {
-            viewModel.createTravel()
+            viewModel.generateTravel()
         }
         LoadingState(isLoading = state.value.isLoading)
     } else {
@@ -72,11 +72,11 @@ fun CreateTravelScreen(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     style = Typography.titleLarge,
-                    text = stringResource(R.string.create_travel_message)
+                    text = stringResource(R.string.generate_travel_message)
                 )
                 Spacer(modifier = Modifier.height(DimenThree))
 
-                Text(text = stringResource(R.string.create_travel_starting_point_name))
+                Text(text = stringResource(R.string.generate_travel_starting_point_name))
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(size = DimenTwo),
@@ -90,7 +90,7 @@ fun CreateTravelScreen(
                     })
                 Spacer(modifier = Modifier.height(DimenTwo))
 
-                Text(text = stringResource(R.string.create_travel_ending_point_name))
+                Text(text = stringResource(R.string.generate_travel_ending_point_name))
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(size = DimenTwo),
@@ -104,7 +104,7 @@ fun CreateTravelScreen(
                     })
                 Spacer(modifier = Modifier.height(DimenTwo))
 
-                Text(text = stringResource(R.string.create_travel_duration_in_days))
+                Text(text = stringResource(R.string.generate_travel_duration_in_days))
 
 
                 Box(modifier = Modifier.clickable {
@@ -139,7 +139,7 @@ fun CreateTravelScreen(
                             text = {
                                 Text(
                                     pluralStringResource(
-                                        R.plurals.create_travel_days,
+                                        R.plurals.generate_travel_days,
                                         1,
                                         1
                                     )
@@ -151,7 +151,7 @@ fun CreateTravelScreen(
                         DropdownMenuItem(text = {
                             Text(
                                 pluralStringResource(
-                                    R.plurals.create_travel_days,
+                                    R.plurals.generate_travel_days,
                                     2,
                                     2
                                 )
@@ -162,7 +162,7 @@ fun CreateTravelScreen(
                         DropdownMenuItem(text = {
                             Text(
                                 pluralStringResource(
-                                    R.plurals.create_travel_days,
+                                    R.plurals.generate_travel_days,
                                     7,
                                     7
                                 )
@@ -173,7 +173,7 @@ fun CreateTravelScreen(
                         DropdownMenuItem(text = {
                             Text(
                                 pluralStringResource(
-                                    R.plurals.create_travel_days,
+                                    R.plurals.generate_travel_days,
                                     14,
                                     14
                                 )
@@ -191,10 +191,10 @@ fun CreateTravelScreen(
             TravelButton(
                 modifier = Modifier.align(Alignment.End),
                 onClick = {
-                    viewModel.createTravel()
+                    viewModel.generateTravel()
                 },
                 text = if (travelId != null) stringResource(R.string.edit_travel_button) else stringResource(
-                    R.string.create_travel_button
+                    R.string.generate_travel_button
                 )
             )
         }
@@ -203,8 +203,8 @@ fun CreateTravelScreen(
 
 @Preview
 @Composable
-fun CreateTravelScreenPreview(modifier: Modifier = Modifier) {
-    CreateTravelScreen() {
+fun GenerateTravelScreenPreview(modifier: Modifier = Modifier) {
+    GenerateTravelScreen() {
 
     }
 }

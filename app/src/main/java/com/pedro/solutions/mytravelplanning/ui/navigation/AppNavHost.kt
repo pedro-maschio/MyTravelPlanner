@@ -24,7 +24,7 @@ import androidx.navigation.toRoute
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
-import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelScreen
+import com.pedro.solutions.mytravelplanning.ui.screens.generate.GenerateTravelScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelDetailScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelItem
 import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroScreen
@@ -41,7 +41,7 @@ fun AppNavHost(modifier: Modifier = Modifier) {
     val isOnMainScreen = false
     val repository: TravelsRepository = koinInject()
     val startDestination =
-        if (repository.isShownIntroduction()) TravelsRoutes.CreateTravelScreen() else TravelsRoutes.IntroScreen
+        if (repository.isShownIntroduction()) TravelsRoutes.GenerateTravelScreen() else TravelsRoutes.IntroScreen
 
     Scaffold(modifier = modifier, topBar = {
         CenterAlignedTopAppBar(title = {
@@ -64,7 +64,7 @@ fun AppNavHost(modifier: Modifier = Modifier) {
     }, floatingActionButton = {
         if (isOnMainScreen) {
             FloatingActionButton(onClick = {
-                navController.navigate(TravelsRoutes.CreateTravelScreen())
+                navController.navigate(TravelsRoutes.GenerateTravelScreen())
             }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
@@ -80,13 +80,13 @@ fun AppNavHost(modifier: Modifier = Modifier) {
             composable<TravelsRoutes.IntroScreen> { navBackStackEntry ->
                 IntroScreen {
                     navController.popBackStack()
-                    navController.navigate(TravelsRoutes.CreateTravelScreen())
+                    navController.navigate(TravelsRoutes.GenerateTravelScreen())
                 }
             }
 
-            composable<TravelsRoutes.CreateTravelScreen> { backStackEntry ->
-                val travelId: TravelsRoutes.CreateTravelScreen = backStackEntry.toRoute()
-                CreateTravelScreen(travelId = travelId.id, onTravelCreated = {
+            composable<TravelsRoutes.GenerateTravelScreen> { backStackEntry ->
+                val travelId: TravelsRoutes.GenerateTravelScreen = backStackEntry.toRoute()
+                GenerateTravelScreen(travelId = travelId.id, onTravelGenerated = {
                     navController.navigate(TravelsRoutes.TravelDetailScreen(Json.encodeToString(it)))
                 })
             }

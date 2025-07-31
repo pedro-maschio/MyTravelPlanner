@@ -1,6 +1,5 @@
 package com.pedro.solutions.mytravelplanning.ui.navigation
 
-import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import kotlinx.serialization.Serializable
 
 
@@ -9,7 +8,7 @@ object TravelsRoutes {
     data object IntroScreen
 
     @Serializable
-    data class CreateTravelScreen(val id: Int? = null)
+    data class GenerateTravelScreen(val id: Int? = null)
 
     @Serializable
     data object MainScreen

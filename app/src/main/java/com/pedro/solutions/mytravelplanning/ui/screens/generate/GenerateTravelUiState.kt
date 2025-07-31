@@ -1,8 +1,8 @@
-package com.pedro.solutions.mytravelplanning.ui.screens.create
+package com.pedro.solutions.mytravelplanning.ui.screens.generate
 
 import com.pedro.solutions.mytravelplanning.data.models.Travel
 
-data class CreateTravelUiState(
+data class GenerateTravelUiState(
     val travel: Travel = Travel(),
     var isLoading: Boolean = false,
     val showStartDateModal: Boolean = false,
