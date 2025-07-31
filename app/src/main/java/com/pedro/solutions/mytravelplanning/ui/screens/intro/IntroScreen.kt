@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -25,7 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
-import com.pedro.solutions.mytravelplanning.ui.theme.TravelsColors.Purple80
+import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelButton
+import com.pedro.solutions.mytravelplanning.ui.theme.TravelsColors.PurpleGrey80
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
@@ -74,11 +74,10 @@ fun IntroScreen(
             viewModel.onSelectedOptionChanged(SelectedOption.CAR)
         }
 
-        Button(enabled = uiState.value.isSaveButtonShowing, onClick = {
+        TravelButton(enabled = uiState.value.isSaveButtonShowing, onClick = {
             viewModel.onSaveSelectedVehicle()
-        }) {
-            Text(text = stringResource(R.string.intro_save_button))
-        }
+        }, text = stringResource(R.string.intro_save_button))
+
         Text(
             text = stringResource(R.string.intro_info_text),
             style = Typography.labelSmall,
@@ -97,7 +96,7 @@ fun VehicleCard(
     onClick: () -> Unit = {}
 ) {
     val cardColor = if (isHighLighted) {
-        Purple80
+        PurpleGrey80
     } else {
         CardDefaults.cardColors().containerColor
     }

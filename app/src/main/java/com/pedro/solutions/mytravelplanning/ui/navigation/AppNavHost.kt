@@ -94,13 +94,52 @@ fun AppNavHost(modifier: Modifier = Modifier) {
             composable<TravelsRoutes.TravelDetailScreen> { backStackEntry ->
                 val travelGuide = backStackEntry.toRoute<TravelsRoutes.TravelDetailScreen>().travelGuideJson
                 val travelItems = mutableListOf<TravelItem>()
-                Json.decodeFromString<TravelGuide>(travelGuide).days?.forEachIndexed { index, item ->
-                    travelItems.add(TravelItem.Day(index = index, title = item?.title.orEmpty()))
-                    item?.activities?.forEach { activity ->
-                        travelItems.add(TravelItem.Activity(activity))
+                try {
+                    Json.decodeFromString<TravelGuide>(travelGuide).days?.forEachIndexed { index, item ->
+                        travelItems.add(
+                            TravelItem.Day(
+                                index = index,
+                                title = item?.title.orEmpty()
+                            )
+                        )
+                        item?.activities?.forEach { activity ->
+                            travelItems.add(TravelItem.Activity(activity))
+                        }
                     }
+                } catch (e: Exception) {
+                    // TODO: Log this, this should never happen
                 }
-                TravelDetailScreen(travelItems = travelItems )
+                val mockedTravelItems = listOf(
+                    TravelItem.Day(index = 0, title = "Dia 1: Chegada e Centro Histórico"),
+                    TravelItem.Activity("Saída de Brasília cedo para chegar antes do almoço."),
+                    TravelItem.Activity("Check-in em uma pousada charmosa, como Pousada dos Pirineus ou Casarão Villa do Império."),
+                    TravelItem.Day(index = 1, title = "Dia 2: Cachoeiras e Serra dos Pireneus"),
+                    TravelItem.Activity("Café da manhã reforçado na pousada."),
+                    TravelItem.Activity("Visita à Cachoeira do Abade (trilha leve, ótima para banho)"),
+                    TravelItem.Activity("Alternativa: Cachoeira Meia Lua (mais próxima do centro)."),
+                    TravelItem.Activity("Restaurante Fazenda Babilônia (famoso por seu café colonial e comida típica)."),
+                    TravelItem.Day(index = 2, title = "Dia 3: Últimas Cachoeiras e Despedida"),
+                    TravelItem.Activity("Café da manhã e checkout da pousada."),
+                    TravelItem.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
+                    TravelItem.Activity("Visita à Cachoeira Bonsucesso (conjunto de quedas d’água com trilhas fáceis)."),
+                    TravelItem.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
+                    TravelItem.Activity("Caminhada leve pelo centro para últimas compras (artesanato, licores e doces)."),
+                    TravelItem.Day(index = 3, title = "Dia 1: Chegada e Centro Histórico"),
+                    TravelItem.Activity("Saída de Brasília cedo para chegar antes do almoço."),
+                    TravelItem.Activity("Check-in em uma pousada charmosa, como Pousada dos Pirineus ou Casarão Villa do Império."),
+                    TravelItem.Day(index = 4, title = "Dia 2: Cachoeiras e Serra dos Pireneus"),
+                    TravelItem.Activity("Café da manhã reforçado na pousada."),
+                    TravelItem.Activity("Visita à Cachoeira do Abade (trilha leve, ótima para banho)"),
+                    TravelItem.Activity("Alternativa: Cachoeira Meia Lua (mais próxima do centro)."),
+                    TravelItem.Activity("Restaurante Fazenda Babilônia (famoso por seu café colonial e comida típica)."),
+                    TravelItem.Day(index = 5, title = "Dia 3: Últimas Cachoeiras e Despedida"),
+                    TravelItem.Activity("Café da manhã e checkout da pousada."),
+                    TravelItem.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
+                    TravelItem.Activity("Visita à Cachoeira Bonsucesso (conjunto de quedas d’água com trilhas fáceis)."),
+                    TravelItem.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
+                    TravelItem.Activity("Caminhada leve pelo centro para últimas compras (artesanato, licores e doces)."),
+                )
+                TravelDetailScreen(travelItems = travelItems)
             }
             composable<TravelsRoutes.MainScreen> { backStackEntry ->
 

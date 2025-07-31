@@ -33,6 +33,7 @@ android {
             buildConfigField("String", "CHAT_GPT_API_KEY", Properties().apply {
                 load(rootProject.file("local.properties").inputStream())
             }.getProperty("CHAT_GPT_API_KEY"))
+            signingConfig = signingConfigs.getByName("debug")
         }
 
         debug {

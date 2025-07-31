@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,16 +19,25 @@ import com.pedro.solutions.mytravelplanning.ui.theme.TravelsColors.Background
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
 
 @Composable
-fun ConnectionError(modifier: Modifier = Modifier, tryAgainAction: () -> Unit) {
-    Column(
-        modifier = modifier.fillMaxSize().background(Background),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = stringResource(R.string.connection_error_message))
-        Spacer(modifier=Modifier.height(DimenTwo))
-        Button(onClick = tryAgainAction) {
-            Text(text = stringResource(R.string.connection_error_try_again))
+fun ConnectionError(
+    modifier: Modifier = Modifier,
+    isShowing: Boolean = true,
+    tryAgainAction: () -> Unit
+) {
+    if (isShowing) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = stringResource(R.string.connection_error_message))
+            Spacer(modifier = Modifier.height(DimenTwo))
+            TravelButton(
+                text = stringResource(R.string.connection_error_try_again),
+                onClick = tryAgainAction
+            )
         }
     }
 }

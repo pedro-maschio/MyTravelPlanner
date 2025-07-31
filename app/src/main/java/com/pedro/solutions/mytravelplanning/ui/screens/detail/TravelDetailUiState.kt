@@ -6,4 +6,4 @@ sealed class TravelItem {
     class Activity(val title: String) : TravelItem()
 }
 
-data class TravelDetailUiState(val travelItems: List<TravelItem> = emptyList())
+data class TravelDetailUiState(val travelItems: List<TravelItem> = emptyList(), val isEditing: Boolean = false)

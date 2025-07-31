@@ -1,6 +1,5 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.create
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -76,7 +75,6 @@ class CreateTravelViewModel(private val repository: TravelsRepository) : ViewMod
                 val response = repository.getChatResponse(request)
                 val content = response.choices[0].message?.content
                 val travelGuide = Gson().fromJson(content, TravelGuide::class.java)
-                Log.d("PEDRO123", travelGuide.toString())
                 if(travelGuide.days == null) {
                     val errorMessage = Gson().fromJson(content, ErrorMessage::class.java)
                     _uiState.update { it.copy(showErrorScreen = false, errorMessage = errorMessage.message   ) }

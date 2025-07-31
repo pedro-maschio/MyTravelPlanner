@@ -1,15 +1,14 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.detail
 
-import android.util.Log
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
@@ -36,6 +36,8 @@ fun TravelDetailScreen(
     val scrollChannel = Channel<Float>()
     var mutableTravelItems = travelItems.toMutableList()
     val listState = rememberLazyListState()
+
+
     var delta: Float by remember { mutableFloatStateOf(0f) }
     var draggingItemIndex: Int? by remember {
         mutableStateOf(null)
@@ -44,8 +46,7 @@ fun TravelDetailScreen(
         mutableStateOf(null)
     }
     val onMove = { fromIndex: Int, toIndex: Int ->
-        mutableTravelItems =
-            mutableTravelItems.apply { add(toIndex, removeAt(fromIndex)) }
+        mutableTravelItems = mutableTravelItems.apply { add(toIndex, removeAt(fromIndex)) }
     }
 
     LaunchedEffect(listState) {
@@ -60,67 +61,76 @@ fun TravelDetailScreen(
             .fillMaxSize()
             .padding(DimenThree)
             .pointerInput(key1 = listState) {
-                detectDragGesturesAfterLongPress(onDragStart = { offset ->
-                    listState.layoutInfo.visibleItemsInfo.firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
-                        ?.also {
-                            (it.contentType as? TravelItem.Day)?.let { day ->
-                                draggingItemIndex = day.index
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { offset ->
+                        listState.layoutInfo.visibleItemsInfo.firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
+                            ?.also {
+                                (it.contentType as? TravelItem.Day)?.let { day ->
+                                    draggingItem = it
+                                    draggingItemIndex = day.index
+                                }
+                            }
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        delta += dragAmount.y
+                        val currentDraggingItemIndex =
+                            draggingItemIndex ?: return@detectDragGesturesAfterLongPress
+                        val currentDraggingItem =
+                            draggingItem ?: return@detectDragGesturesAfterLongPress
+
+                        val startOffset = currentDraggingItem.offset + delta
+                        val endOffset =
+                            currentDraggingItem.offset + currentDraggingItem.size + delta
+                        val middleOffset = startOffset + (endOffset - startOffset) / 2
+
+                        val targetItem =
+                            listState.layoutInfo.visibleItemsInfo.find { item ->
+                                middleOffset.toInt() in item.offset..item.offset + item.size &&
+                                        currentDraggingItem.index != item.index &&
+                                        item.contentType is TravelItem.Day
+                            }
+                        if (targetItem != null) {
+                            val targetIndex = (targetItem.contentType as TravelItem.Day).index
+                            onMove(currentDraggingItemIndex, targetIndex)
+                            draggingItemIndex = targetIndex
+                            delta += currentDraggingItem.offset - targetItem.offset
+                            draggingItem = targetItem
+                        } else {
+                            val startOffsetToTop =
+                                startOffset - listState.layoutInfo.viewportStartOffset
+                            val endOffsetToBottom =
+                                endOffset - listState.layoutInfo.viewportEndOffset
+                            val scroll =
+                                when {
+                                    startOffsetToTop < 0 -> startOffsetToTop.coerceAtMost(0f)
+                                    endOffsetToBottom > 0 -> endOffsetToBottom.coerceAtLeast(0f)
+                                    else -> 0f
+                                }
+                            val canScrollDown =
+                                currentDraggingItemIndex != mutableTravelItems.size - 1 && endOffsetToBottom > 0
+                            val canScrollUp = currentDraggingItemIndex != 0 && startOffsetToTop < 0
+                            if (scroll != 0f && (canScrollUp || canScrollDown)) {
+                                scrollChannel.trySend(scroll)
                             }
                         }
-                }, onDrag = { change, dragAmount ->
-                    change.consume()
-                    delta += dragAmount.y
-
-                    val currentDraggingItemIndex =
-                        draggingItemIndex ?: return@detectDragGesturesAfterLongPress
-
-                    val currentDraggingItem =
-                        draggingItem ?: return@detectDragGesturesAfterLongPress
-                    val startOffset = currentDraggingItem.offset + delta
-                    val endOffset = currentDraggingItem.offset + currentDraggingItem.size + delta
-                    val middleOffset = startOffset + (endOffset - startOffset) / 2
-
-                    val targetItem = listState.layoutInfo.visibleItemsInfo.find { item ->
-                        middleOffset.toInt() in item.offset..item.offset + item.size && currentDraggingItem.index != item.index && item.contentType is TravelItem.Day
-                    }
-                    if(targetItem != null) {
-                        val targetIndex = (targetItem.contentType as TravelItem.Day).index
-                        Log.d("PEDRO123", "targetIndex=$targetIndex currentDraggingItemIndex=$currentDraggingItemIndex")
-                        onMove(currentDraggingItemIndex, targetIndex)
-                        draggingItemIndex = targetIndex
-                        draggingItem = targetItem
-                        delta += currentDraggingItem.offset - targetItem.offset
-                    } else {
-                        val startOffsetToTop =
-                            startOffset - listState.layoutInfo.viewportStartOffset
-                        val endOffsetToBottom =
-                            endOffset - listState.layoutInfo.viewportEndOffset
-                        val scroll =
-                            when {
-                                startOffsetToTop < 0 -> startOffsetToTop.coerceAtMost(0f)
-                                endOffsetToBottom > 0 -> endOffsetToBottom.coerceAtLeast(0f)
-                                else -> 0f
-                            }
-                        val canScrollDown = currentDraggingItemIndex != mutableTravelItems.size - 1 && endOffsetToBottom > 0
-                        val canScrollUp = currentDraggingItemIndex != 0 && startOffsetToTop < 0
-                        if (scroll != 0f && (canScrollUp || canScrollDown)) {
-                            scrollChannel.trySend(scroll)
-                        }
-                    }
-                }, onDragEnd = {
-                    draggingItem = null
-                    draggingItemIndex = null
-                    delta = 0f
-                }, onDragCancel = {
-                    draggingItem = null
-                    draggingItemIndex = null
-                    delta = 0f
-                })
+                    },
+                    onDragEnd = {
+                        draggingItem = null
+                        draggingItemIndex = null
+                        delta = 0f
+                    },
+                    onDragCancel = {
+                        draggingItem = null
+                        draggingItemIndex = null
+                        delta = 0f
+                    },
+                )
             }, state = listState
     ) {
         itemsIndexed(
             mutableTravelItems,
-            contentType = { index, _ -> TravelItem.Day(index = index, "") }) { index, item ->
+            contentType = { index, _ -> TravelItem.Day(index, "") }) { index, item ->
 
             val itemModifier = if (draggingItemIndex == index) {
                 Modifier
@@ -133,13 +143,11 @@ fun TravelDetailScreen(
             }
             when (item) {
                 is TravelItem.Day -> TravelDay(
-                    modifier = itemModifier,
-                    title = item.title
+                    modifier = itemModifier, title = item.title
                 )
 
                 is TravelItem.Activity -> TravelActivity(
-                    modifier = itemModifier,
-                    title = item.title
+                    modifier = itemModifier, title = item.title
                 )
             }
         }
@@ -148,15 +156,19 @@ fun TravelDetailScreen(
 
 @Composable
 fun TravelDay(modifier: Modifier = Modifier, title: String) {
-    Column {
-        Text(text = title, style = Typography.titleMedium)
+    ElevatedCard(modifier = modifier.padding(vertical = DimenOne)) {
+        Text(
+            modifier = Modifier.padding(DimenOne),
+            text = title,
+            style = Typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+        )
     }
 }
 
 @Composable
 fun TravelActivity(modifier: Modifier = Modifier, title: String) {
-    Column(modifier = modifier.padding(bottom = DimenOne)) {
-        Text(text = title, style = Typography.bodyMedium)
+    ElevatedCard(modifier = modifier.padding(vertical = DimenOne)) {
+        Text(modifier = Modifier.padding(DimenOne), text = title, style = Typography.bodyLarge)
     }
 }
 
