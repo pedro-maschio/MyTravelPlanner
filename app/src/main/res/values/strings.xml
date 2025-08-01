@@ -33,4 +33,7 @@
     <string name="intro_motorcicle_choice">Moto</string>
     <string name="intro_save_button">Salvar</string>
     <string name="intro_info_text">Não se preocupe, você pode alterar sua opção posteriormente nas configurações.</string>
+
+    <string name="create_travel_title">Crie seu roteiro de viagem</string>
+    <string name="create_travel_add_new_day">Adicionar novo dia de viagem</string>
 </resources>

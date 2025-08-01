@@ -1,16 +1,13 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.generate
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -18,7 +15,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +30,7 @@ import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.ConnectionError
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.LoadingState
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelButton
+import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelTextField
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenThree
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
@@ -66,7 +63,7 @@ fun GenerateTravelScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(horizontal = DimenTwo, vertical = DimenTwo)
+                .padding(DimenTwo)
                 .verticalScroll(rememberScrollState())
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -77,31 +74,21 @@ fun GenerateTravelScreen(
                 Spacer(modifier = Modifier.height(DimenThree))
 
                 Text(text = stringResource(R.string.generate_travel_starting_point_name))
-                TextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(size = DimenTwo),
-                    colors = TextFieldDefaults.colors(
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent
-                    ),
+                TravelTextField(
                     value = state.value.travel.startingPoint.orEmpty(),
                     onValueChange = {
                         viewModel.updateStartingPoint(it)
-                    })
+                    }
+                )
                 Spacer(modifier = Modifier.height(DimenTwo))
 
                 Text(text = stringResource(R.string.generate_travel_ending_point_name))
-                TextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(size = DimenTwo),
-                    colors = TextFieldDefaults.colors(
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent
-                    ),
+                TravelTextField(
                     value = state.value.travel.endingPoint.orEmpty(),
                     onValueChange = {
                         viewModel.updateEndingPoint(it)
-                    })
+                    }
+                )
                 Spacer(modifier = Modifier.height(DimenTwo))
 
                 Text(text = stringResource(R.string.generate_travel_duration_in_days))
@@ -110,24 +97,18 @@ fun GenerateTravelScreen(
                 Box(modifier = Modifier.clickable {
                     viewModel.showDropDown()
                 }) {
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusable(false),
-                        enabled = false,
-                        shape = RoundedCornerShape(size = DimenTwo),
+                    TravelTextField(
+                        value = state.value.travel.durationInDays,
                         colors = TextFieldDefaults.colors(
                             disabledTextColor = Color.White,
                             unfocusedIndicatorColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
                             disabledIndicatorColor = Color.Transparent
                         ),
-                        value = state.value.travel.durationInDays,
+                        enabled = false,
                         trailingIcon = {
                             Icon(Icons.Filled.ArrowDropDown, null)
-                        },
-                        onValueChange = {},
-                        readOnly = true,
+                        }
                     )
                 }
 

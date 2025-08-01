@@ -8,6 +8,9 @@ object TravelsRoutes {
     data object IntroScreen
 
     @Serializable
+    data object CreateTravelScreen
+
+    @Serializable
     data class GenerateTravelScreen(val id: Int? = null)
 
     @Serializable

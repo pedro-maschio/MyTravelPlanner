@@ -24,6 +24,7 @@ import androidx.navigation.toRoute
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
+import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.generate.GenerateTravelScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelDetailScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelItem
@@ -40,8 +41,8 @@ fun AppNavHost(modifier: Modifier = Modifier) {
     val backStackEntries by navController.currentBackStack.collectAsState()
     val isOnMainScreen = false
     val repository: TravelsRepository = koinInject()
-    val startDestination =
-        if (repository.isShownIntroduction()) TravelsRoutes.GenerateTravelScreen() else TravelsRoutes.IntroScreen
+    val startDestination = TravelsRoutes.CreateTravelScreen
+        //if (repository.isShownIntroduction()) TravelsRoutes.GenerateTravelScreen() else TravelsRoutes.IntroScreen
 
     Scaffold(modifier = modifier, topBar = {
         CenterAlignedTopAppBar(title = {
@@ -81,6 +82,12 @@ fun AppNavHost(modifier: Modifier = Modifier) {
                 IntroScreen {
                     navController.popBackStack()
                     navController.navigate(TravelsRoutes.GenerateTravelScreen())
+                }
+            }
+
+            composable<TravelsRoutes.CreateTravelScreen> { navBackStackEntry ->
+                CreateTravelScreen() {
+
                 }
             }
 

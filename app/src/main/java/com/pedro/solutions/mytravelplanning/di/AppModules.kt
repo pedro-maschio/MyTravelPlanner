@@ -4,10 +4,11 @@ import androidx.room.Room
 import com.pedro.solutions.mytravelplanning.data.database.TravelDatabase
 import com.pedro.solutions.mytravelplanning.data.network.ChatGptApi
 import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
-import com.pedro.solutions.mytravelplanning.ui.screens.generate.GenerateTravelViewModel
-import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreenViewModel
-import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroViewModel
+import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelViewModel
 import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelDetailViewModel
+import com.pedro.solutions.mytravelplanning.ui.screens.generate.GenerateTravelViewModel
+import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroViewModel
+import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreenViewModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidApplication
@@ -23,6 +24,7 @@ val appModules = module {
     viewModelOf(::MainScreenViewModel)
     viewModelOf(::IntroViewModel)
     viewModelOf(::TravelDetailViewModel)
+    viewModelOf(::CreateTravelViewModel)
 
     single {
         Room.databaseBuilder(androidApplication(), TravelDatabase::class.java, "travel_database").build()
