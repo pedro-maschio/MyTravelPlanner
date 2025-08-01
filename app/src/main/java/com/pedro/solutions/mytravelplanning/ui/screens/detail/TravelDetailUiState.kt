@@ -1,9 +1,8 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.detail
 
+import com.pedro.solutions.mytravelplanning.data.models.TravelType
 
-sealed class TravelItem {
-    class Day(val index: Int, val title: String) : TravelItem()
-    class Activity(val title: String) : TravelItem()
-}
-
-data class TravelDetailUiState(val travelItems: List<TravelItem> = emptyList(), val isEditing: Boolean = false)
+data class TravelDetailUiState(
+    val travelItems: List<TravelType> = emptyList(),
+    val isEditing: Boolean = false
+)

@@ -1,6 +1,5 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.create
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -11,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
+import com.pedro.solutions.mytravelplanning.data.models.TravelType
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelButton
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelTextField
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
@@ -72,22 +71,9 @@ fun CreateTravelScreen(
                             modifier = Modifier
                                 .padding(end = DimenOne)
                                 .clickable {
-                                    viewModel.addActivity(index)
-                                    Log.d(
-                                        "CreateTravelScreen",
-                                        "CreateTravelScreen: index=$index ${uiState.value.travel.days}"
-                                    )
+                                    viewModel.addActivity(item.index)
                                 },
                             imageVector = Icons.Default.Add,
-                            contentDescription = null
-                        )
-                        Icon(
-                            modifier = Modifier
-                                .padding(end = DimenOne)
-                                .clickable {
-                                    viewModel.deleteDayOrActivity(index)
-                                },
-                            imageVector = Icons.Default.Delete,
                             contentDescription = null
                         )
                         }
@@ -97,28 +83,6 @@ fun CreateTravelScreen(
                                 .weight(1f)
                                 .padding(end = DimenOne),
                             value = item?.title.orEmpty()
-                        )
-                        Icon(
-                            modifier = Modifier
-                                .padding(end = DimenOne)
-                                .clickable {
-                                    viewModel.addActivity(index)
-                                    Log.d(
-                                        "CreateTravelScreen",
-                                        "CreateTravelScreen: index=$index ${uiState.value.travel.days}"
-                                    )
-                                },
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null
-                        )
-                        Icon(
-                            modifier = Modifier
-                                .padding(end = DimenOne)
-                                .clickable {
-                                    viewModel.deleteDayOrActivity(index)
-                                },
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null
                         )
                     }
                 }

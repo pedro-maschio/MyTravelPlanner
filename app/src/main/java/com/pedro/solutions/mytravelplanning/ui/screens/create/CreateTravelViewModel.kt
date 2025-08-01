@@ -2,6 +2,7 @@ package com.pedro.solutions.mytravelplanning.ui.screens.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pedro.solutions.mytravelplanning.data.models.TravelType
 import com.pedro.solutions.mytravelplanning.data.models.openai.Day
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,8 +15,8 @@ class CreateTravelViewModel : ViewModel() {
 
     fun buildTravelState() {
         _uiState.update {
-            it.copy(travels = it.travel.days.flatMap { day ->
-                listOf(TravelType.Day(day?.title.orEmpty())) + day?.activities!!.map { activity ->
+            it.copy(travels = it.travel.days.flatMapIndexed { index, day ->
+                listOf(TravelType.Day(index = index, title = day?.title.orEmpty())) + day?.activities!!.map { activity ->
                     TravelType.Activity(activity)
                 }
             })
@@ -45,7 +46,7 @@ class CreateTravelViewModel : ViewModel() {
                 travel = it.travel.copy(
                     days = _uiState.value.travel.days.plus(
                         Day(
-                            title = "",
+                            title = "Day ${_uiState.value.travel.days.size+1}",
                             activities = emptyList()
                         )
                     )

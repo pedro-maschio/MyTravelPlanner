@@ -23,6 +23,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
+import com.pedro.solutions.mytravelplanning.data.models.TravelType
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenThree
@@ -31,7 +32,7 @@ import kotlinx.coroutines.channels.Channel
 
 @Composable
 fun TravelDetailScreen(
-    modifier: Modifier = Modifier, travelItems: List<TravelItem>
+    modifier: Modifier = Modifier, travelItems: List<TravelType>
 ) {
     val scrollChannel = Channel<Float>()
     var mutableTravelItems = travelItems.toMutableList()
@@ -65,7 +66,7 @@ fun TravelDetailScreen(
                     onDragStart = { offset ->
                         listState.layoutInfo.visibleItemsInfo.firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
                             ?.also {
-                                (it.contentType as? TravelItem.Day)?.let { day ->
+                                (it.contentType as? TravelType.Day)?.let { day ->
                                     draggingItem = it
                                     draggingItemIndex = day.index
                                 }
@@ -88,10 +89,10 @@ fun TravelDetailScreen(
                             listState.layoutInfo.visibleItemsInfo.find { item ->
                                 middleOffset.toInt() in item.offset..item.offset + item.size &&
                                         currentDraggingItem.index != item.index &&
-                                        item.contentType is TravelItem.Day
+                                        item.contentType is TravelType.Day
                             }
                         if (targetItem != null) {
-                            val targetIndex = (targetItem.contentType as TravelItem.Day).index
+                            val targetIndex = (targetItem.contentType as TravelType.Day).index
                             onMove(currentDraggingItemIndex, targetIndex)
                             draggingItemIndex = targetIndex
                             delta += currentDraggingItem.offset - targetItem.offset
@@ -130,7 +131,7 @@ fun TravelDetailScreen(
     ) {
         itemsIndexed(
             mutableTravelItems,
-            contentType = { index, _ -> TravelItem.Day(index, "") }) { index, item ->
+            contentType = { index, _ -> TravelType.Day(index, "") }) { index, item ->
 
             val itemModifier = if (draggingItemIndex == index) {
                 Modifier
@@ -142,11 +143,11 @@ fun TravelDetailScreen(
                 Modifier
             }
             when (item) {
-                is TravelItem.Day -> TravelDay(
+                is TravelType.Day -> TravelDay(
                     modifier = itemModifier, title = item.title
                 )
 
-                is TravelItem.Activity -> TravelActivity(
+                is TravelType.Activity -> TravelActivity(
                     modifier = itemModifier, title = item.title
                 )
             }
@@ -176,34 +177,34 @@ fun TravelActivity(modifier: Modifier = Modifier, title: String) {
 @Composable
 fun TravelDetailScreenPreview(modifier: Modifier = Modifier) {
     val travelItems = listOf(
-        TravelItem.Day(index = 0, title = "Dia 1: Chegada e Centro Histórico"),
-        TravelItem.Activity("Saída de Brasília cedo para chegar antes do almoço."),
-        TravelItem.Activity("Check-in em uma pousada charmosa, como Pousada dos Pirineus ou Casarão Villa do Império."),
-        TravelItem.Day(index = 1, title = "Dia 2: Cachoeiras e Serra dos Pireneus"),
-        TravelItem.Activity("Café da manhã reforçado na pousada."),
-        TravelItem.Activity("Visita à Cachoeira do Abade (trilha leve, ótima para banho)"),
-        TravelItem.Activity("Alternativa: Cachoeira Meia Lua (mais próxima do centro)."),
-        TravelItem.Activity("Restaurante Fazenda Babilônia (famoso por seu café colonial e comida típica)."),
-        TravelItem.Day(index = 2, title = "Dia 3: Últimas Cachoeiras e Despedida"),
-        TravelItem.Activity("Café da manhã e checkout da pousada."),
-        TravelItem.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
-        TravelItem.Activity("Visita à Cachoeira Bonsucesso (conjunto de quedas d’água com trilhas fáceis)."),
-        TravelItem.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
-        TravelItem.Activity("Caminhada leve pelo centro para últimas compras (artesanato, licores e doces)."),
-        TravelItem.Day(index = 3, title = "Dia 1: Chegada e Centro Histórico"),
-        TravelItem.Activity("Saída de Brasília cedo para chegar antes do almoço."),
-        TravelItem.Activity("Check-in em uma pousada charmosa, como Pousada dos Pirineus ou Casarão Villa do Império."),
-        TravelItem.Day(index = 4, title = "Dia 2: Cachoeiras e Serra dos Pireneus"),
-        TravelItem.Activity("Café da manhã reforçado na pousada."),
-        TravelItem.Activity("Visita à Cachoeira do Abade (trilha leve, ótima para banho)"),
-        TravelItem.Activity("Alternativa: Cachoeira Meia Lua (mais próxima do centro)."),
-        TravelItem.Activity("Restaurante Fazenda Babilônia (famoso por seu café colonial e comida típica)."),
-        TravelItem.Day(index = 5, title = "Dia 3: Últimas Cachoeiras e Despedida"),
-        TravelItem.Activity("Café da manhã e checkout da pousada."),
-        TravelItem.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
-        TravelItem.Activity("Visita à Cachoeira Bonsucesso (conjunto de quedas d’água com trilhas fáceis)."),
-        TravelItem.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
-        TravelItem.Activity("Caminhada leve pelo centro para últimas compras (artesanato, licores e doces)."),
+        TravelType.Day(index = 0, title = "Dia 1: Chegada e Centro Histórico"),
+        TravelType.Activity("Saída de Brasília cedo para chegar antes do almoço."),
+        TravelType.Activity("Check-in em uma pousada charmosa, como Pousada dos Pirineus ou Casarão Villa do Império."),
+        TravelType.Day(index = 1, title = "Dia 2: Cachoeiras e Serra dos Pireneus"),
+        TravelType.Activity("Café da manhã reforçado na pousada."),
+        TravelType.Activity("Visita à Cachoeira do Abade (trilha leve, ótima para banho)"),
+        TravelType.Activity("Alternativa: Cachoeira Meia Lua (mais próxima do centro)."),
+        TravelType.Activity("Restaurante Fazenda Babilônia (famoso por seu café colonial e comida típica)."),
+        TravelType.Day(index = 2, title = "Dia 3: Últimas Cachoeiras e Despedida"),
+        TravelType.Activity("Café da manhã e checkout da pousada."),
+        TravelType.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
+        TravelType.Activity("Visita à Cachoeira Bonsucesso (conjunto de quedas d’água com trilhas fáceis)."),
+        TravelType.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
+        TravelType.Activity("Caminhada leve pelo centro para últimas compras (artesanato, licores e doces)."),
+        TravelType.Day(index = 3, title = "Dia 1: Chegada e Centro Histórico"),
+        TravelType.Activity("Saída de Brasília cedo para chegar antes do almoço."),
+        TravelType.Activity("Check-in em uma pousada charmosa, como Pousada dos Pirineus ou Casarão Villa do Império."),
+        TravelType.Day(index = 4, title = "Dia 2: Cachoeiras e Serra dos Pireneus"),
+        TravelType.Activity("Café da manhã reforçado na pousada."),
+        TravelType.Activity("Visita à Cachoeira do Abade (trilha leve, ótima para banho)"),
+        TravelType.Activity("Alternativa: Cachoeira Meia Lua (mais próxima do centro)."),
+        TravelType.Activity("Restaurante Fazenda Babilônia (famoso por seu café colonial e comida típica)."),
+        TravelType.Day(index = 5, title = "Dia 3: Últimas Cachoeiras e Despedida"),
+        TravelType.Activity("Café da manhã e checkout da pousada."),
+        TravelType.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
+        TravelType.Activity("Visita à Cachoeira Bonsucesso (conjunto de quedas d’água com trilhas fáceis)."),
+        TravelType.Activity("Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."),
+        TravelType.Activity("Caminhada leve pelo centro para últimas compras (artesanato, licores e doces)."),
     )
 
     TravelDetailScreen(travelItems = travelItems)
