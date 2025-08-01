@@ -8,5 +8,12 @@ object Dimens {
     val DimenOne = 8.dp
     val DimenTwo = 16.dp
     val DimenThree = 32.dp
+
+    val DimenFour = 48.dp
+
+    val DimenFive = 54.dp
+
+    val DimenSix = 64.dp
+
     val DimenSize120 = 120.dp
 }

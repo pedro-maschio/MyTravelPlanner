@@ -14,13 +14,25 @@ class CreateTravelViewModel : ViewModel() {
     val uiState = _uiState.asStateFlow()
 
     fun buildTravelState() {
-        _uiState.update {
-            it.copy(travels = it.travel.days.flatMapIndexed { index, day ->
-                listOf(TravelType.Day(index = index, title = day?.title.orEmpty())) + day?.activities!!.map { activity ->
-                    TravelType.Activity(activity)
+        val currentTravel = _uiState.value.travel
+        val newTravels = buildList {
+            currentTravel.days.forEachIndexed { index, day ->
+                if (day != null) {
+                    add(TravelType.Day(index = index, title = day.title.orEmpty()))
+                    day.activities.forEachIndexed { activityIndex, activity ->
+                        add(
+                            TravelType.Activity(
+                                index = activityIndex,
+                                dayIndex = index,
+                                title = activity
+                            )
+                        )
+                    }
                 }
-            })
+            }
         }
+
+        _uiState.update { it.copy(travels = newTravels) }
     }
 
 
@@ -46,7 +58,7 @@ class CreateTravelViewModel : ViewModel() {
                 travel = it.travel.copy(
                     days = _uiState.value.travel.days.plus(
                         Day(
-                            title = "Day ${_uiState.value.travel.days.size+1}",
+                            title = "Day ${_uiState.value.travel.days.size + 1}",
                             activities = emptyList()
                         )
                     )
@@ -60,6 +72,41 @@ class CreateTravelViewModel : ViewModel() {
         val activities = _uiState.value.travel.days.getOrNull(index)?.activities
         _uiState.value.travel.days.getOrNull(index)?.activities =
             activities?.toMutableList()?.plus("") ?: listOf("")
+        buildTravelState()
+    }
+
+    fun updateTravelDayText(index: Int, newText: String) {
+        _uiState.update { state ->
+            state.copy(
+                travel = state.travel.copy(
+                    days = state.travel.days.mapIndexed { dIndex, day ->
+                        if (dIndex == index && day != null) day.copy(title = newText)
+                        else day
+                    }
+                )
+            )
+        }
+
+        buildTravelState()
+    }
+
+    fun updateTravelActivityText(dayIndex: Int, activityIndex: Int, newText: String) {
+        _uiState.update { state ->
+            state.copy(
+                travel = state.travel.copy(
+                    days = state.travel.days.mapIndexed { index, day ->
+                        if (index == dayIndex && day != null) {
+                            day.copy(
+                                activities = day.activities.mapIndexed { aIndex, activity ->
+                                    if (aIndex == activityIndex) newText else activity
+                                }
+                            )
+                        } else day
+                    }
+                )
+            )
+        }
+
         buildTravelState()
     }
 
