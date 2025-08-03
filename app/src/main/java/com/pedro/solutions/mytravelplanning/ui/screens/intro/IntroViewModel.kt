@@ -2,14 +2,14 @@ package com.pedro.solutions.mytravelplanning.ui.screens.intro
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
+import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class IntroViewModel(private val travelsRepository: TravelsRepository) : ViewModel() {
+class IntroViewModel(private val travelsRepository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(IntroUiState())
     val uiState = _uiState.asStateFlow()
 

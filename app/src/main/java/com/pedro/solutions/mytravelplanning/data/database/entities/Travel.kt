@@ -1,41 +1,46 @@
 package com.pedro.solutions.mytravelplanning.data.database.entities
 
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.Relation
-import com.pedro.solutions.mytravelplanning.data.models.openai.Day
 
-@Entity(tableName = "travel")
-data class Travel(
-    @PrimaryKey val id: Int
-)
-
-@Entity(tableName = "travel_guides")
+@Entity
 data class TravelGuideEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val travelName: String
 )
 
 @Entity(
-    tableName = "days",
     foreignKeys = [
         ForeignKey(
             entity = TravelGuideEntity::class,
             parentColumns = ["id"],
-            childColumns = ["travelId"],
+            childColumns = ["travelGuideId"],
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("travelId")]
+    indices = [Index("travelGuideId")]
 )
 data class DayEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val travelId: Long,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String?,
-    val activities: List<String>? // Requires TypeConverter
+    val travelGuideId: Long
+)
+
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = DayEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["dayId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("dayId")]
+)
+data class ActivityEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val title: String,
+    val dayId: Long
 )

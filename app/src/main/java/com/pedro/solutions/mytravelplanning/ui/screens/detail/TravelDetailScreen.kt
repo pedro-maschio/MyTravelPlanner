@@ -23,19 +23,29 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
+import com.pedro.solutions.mytravelplanning.ui.navigation.TravelsRoutes
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenThree
 import kotlinx.coroutines.channels.Channel
+import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
 fun TravelDetailScreen(
-    modifier: Modifier = Modifier, travelItems: List<TravelType>
+    modifier: Modifier = Modifier,
+    travelData: TravelsRoutes.TravelDetailScreen,
+    viewModel: TravelDetailViewModel = koinViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.loadTravelDetail(travelData)
+    }
+
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val scrollChannel = Channel<Float>()
-    var mutableTravelItems = travelItems.toMutableList()
+    var mutableTravelItems = uiState.value.travelItems.toMutableList()
     val listState = rememberLazyListState()
 
 

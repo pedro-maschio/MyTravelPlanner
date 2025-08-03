@@ -8,7 +8,7 @@ object TravelsRoutes {
     data object IntroScreen
 
     @Serializable
-    data object CreateTravelScreen
+    data class CreateTravelScreen(val travelId: Long? = null)
 
     @Serializable
     data class GenerateTravelScreen(val id: Int? = null)
@@ -17,5 +17,5 @@ object TravelsRoutes {
     data object MainScreen
 
     @Serializable
-    data class TravelDetailScreen(val travelGuideJson: String)
+    data class TravelDetailScreen(val travelId: Long? = null, val travelGuideJson: String? = null)
 }

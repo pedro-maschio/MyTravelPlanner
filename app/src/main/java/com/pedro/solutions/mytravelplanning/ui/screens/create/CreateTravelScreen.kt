@@ -1,5 +1,7 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.create
 
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
@@ -23,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
+import com.pedro.solutions.mytravelplanning.ui.screens.commons.LoadingState
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelButton
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelTextField
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
@@ -35,98 +39,125 @@ import org.koin.androidx.compose.koinViewModel
 fun CreateTravelScreen(
     modifier: Modifier = Modifier,
     viewModel: CreateTravelViewModel = koinViewModel(),
+    travelId: Long? = null,
+    isEditing: Boolean = false,
+    onFinishEditing: () -> Unit,
     onTravelCreated: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val focusManager = LocalFocusManager.current
+
+    BackHandler {
+        // TODO: fix the focus from the keyboard, when the user clicks back
+        focusManager.clearFocus()
+        if (isEditing) {
+            onFinishEditing()
+        }
+        viewModel.createTravel()
+        onTravelCreated()
+        backDispatcher?.onBackPressed()
+    }
 
     LaunchedEffect(Unit) {
+        viewModel.loadTravel(travelId)
+        viewModel.setEditingState(isEditing)
         viewModel.addDefaultDay()
     }
 
-    val focusManager = LocalFocusManager.current
+    if (uiState.value.isLoading) {
+        LoadingState(isLoading = true)
+    } else {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(DimenTwo),
+            verticalArrangement = Arrangement.spacedBy(DimenOne),
+            state = listState
+        ) {
+            item {
+                Text(
+                    modifier = Modifier.padding(bottom = DimenTwo),
+                    style = Typography.titleLarge,
+                    text = stringResource(R.string.create_travel_title)
+                )
+                TravelTextField(
+                    modifier = Modifier.padding(bottom = DimenTwo),
+                    value = uiState.value.travelName,
+                    placeHolder = stringResource(R.string.create_travel_name_placeholder),
+                    onValueChange = {
+                        viewModel.updateTravelName(travelName = it)
+                    }
+                )
+            }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(DimenTwo),
-        verticalArrangement = Arrangement.spacedBy(DimenOne)
-    ) {
-        item {
-            Text(
-                modifier = Modifier.padding(bottom = DimenTwo),
-                style = Typography.titleLarge,
-                text = stringResource(R.string.create_travel_title)
-            )
-        }
+            itemsIndexed(uiState.value.travels) { index, item ->
+                Row(
+                    modifier = Modifier.padding(bottom = DimenOne),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    when (item) {
+                        is TravelType.Day -> {
+                            TravelTextField(
+                                modifier = Modifier
+                                    .weight(1f),
+                                value = item.title,
+                                onValueChange = {
+                                    viewModel.updateTravelDayText(index = item.index, newText = it)
+                                }
+                            )
+                            Icon(
+                                modifier = Modifier
+                                    .padding(horizontal = DimenOne)
+                                    .clickable {
+                                        viewModel.addActivity(item.index)
+                                        focusManager.clearFocus()
+                                    },
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null
+                            )
+                        }
 
-        itemsIndexed(uiState.value.travels) { index, item ->
-            Row(
-                modifier = Modifier.padding(bottom =  DimenTwo),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                when (item) {
-                    is TravelType.Day -> {
-                        TravelTextField(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = DimenOne),
-                            value = item.title,
-                            onValueChange = {
-                                viewModel.updateTravelDayText(index = item.index, newText = it)
-                            }
-                        )
-                        Icon(
-                            modifier = Modifier
-                                .padding(end = DimenOne)
-                                .clickable {
-                                    viewModel.addActivity(item.index)
-                                    focusManager.clearFocus()
-                                },
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null
-                        )
+                        is TravelType.Activity -> {
+                            TravelTextField(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = DimenOne),
+                                value = item.title,
+                                onValueChange = {
+                                    viewModel.updateTravelActivityText(
+                                        dayIndex = item.dayIndex,
+                                        activityIndex = item.index,
+                                        newText = it
+                                    )
+                                }
+                            )
+                        }
                     }
 
-                    is TravelType.Activity -> {
-                        TravelTextField(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = DimenOne),
-                            value = item.title,
-                            onValueChange = {
-                                viewModel.updateTravelActivityText(
-                                    dayIndex = item.dayIndex,
-                                    activityIndex = item.index,
-                                    newText = it
-                                )
-                            }
-                        )
-                    }
                 }
+            }
 
+            item {
+                TravelButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(DimenSix)
+                        .padding(bottom = DimenTwo),
+                    text = stringResource(R.string.create_travel_add_new_day)
+                ) {
+                    focusManager.clearFocus()
+                    viewModel.addDay()
+                }
             }
         }
 
-        item {
-            TravelButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(DimenSix)
-                    .padding(bottom = DimenTwo),
-                text = stringResource(R.string.create_travel_add_new_day)
-            ) {
-                focusManager.clearFocus()
-                viewModel.addDay()
-            }
-        }
     }
-
 }
 
 @Preview
 @Composable
 fun CreateTravelScreenPreview(modifier: Modifier = Modifier) {
-    CreateTravelScreen {
-
-    }
+    CreateTravelScreen(onFinishEditing = {}, onTravelCreated = {})
 }

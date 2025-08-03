@@ -4,14 +4,48 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
 import com.pedro.solutions.mytravelplanning.data.models.openai.Day
+import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
+import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CreateTravelViewModel : ViewModel() {
+class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateTravelUiState())
     val uiState = _uiState.asStateFlow()
+
+    var internalTravelId: Long? = null
+
+    fun loadTravel(travelId: Long?) = viewModelScope.launch {
+        if (travelId == null) return@launch
+
+        showLoading()
+        internalTravelId = travelId
+        val travelGuideWithDays = repository.loadTravelDetail(travelId)
+        var travelGuide = TravelGuide()
+
+        travelGuide = travelGuide.copy(
+            travelName = travelGuideWithDays.travelGuide.travelName,
+            days = travelGuideWithDays.days.map { dayWithActivities ->
+                Day(
+                    title = dayWithActivities.day.title,
+                    activities = dayWithActivities.activities.map { it.title })
+            })
+        _uiState.update { it.copy(travel = travelGuide) }
+        buildTravelState()
+        hideLoading()
+    }
+
+    fun showLoading() {
+        _uiState.update { it.copy(isLoading = true) }
+    }
+
+
+    fun hideLoading() {
+        _uiState.update { it.copy(isLoading = false) }
+    }
+
 
     fun buildTravelState() {
         val currentTravel = _uiState.value.travel
@@ -22,9 +56,7 @@ class CreateTravelViewModel : ViewModel() {
                     day.activities.forEachIndexed { activityIndex, activity ->
                         add(
                             TravelType.Activity(
-                                index = activityIndex,
-                                dayIndex = index,
-                                title = activity
+                                index = activityIndex, dayIndex = index, title = activity
                             )
                         )
                     }
@@ -32,24 +64,41 @@ class CreateTravelViewModel : ViewModel() {
             }
         }
 
-        _uiState.update { it.copy(travels = newTravels) }
+        _uiState.update {
+            it.copy(
+                travelName = _uiState.value.travel.travelName,
+                travels = newTravels
+            )
+        }
+    }
+
+    fun updateTravelName(travelName: String) {
+        _uiState.update {
+            it.copy(
+                travelName = travelName,
+                travel = it.travel.copy(travelName = travelName)
+            )
+        }
     }
 
 
-    fun addDefaultDay() = viewModelScope.launch {
+    fun addDefaultDay() {
         _uiState.update {
             it.copy(
                 travel = it.travel.copy(
                     days = listOf(
                         Day(
-                            title = "Day 1",
-                            activities = emptyList()
+                            title = "Day 1", activities = emptyList()
                         )
                     )
                 )
             )
         }
         buildTravelState()
+    }
+
+    fun setEditingState(isEditing: Boolean) {
+        _uiState.update { it.copy(isEditing = isEditing) }
     }
 
     fun addDay() {
@@ -82,8 +131,7 @@ class CreateTravelViewModel : ViewModel() {
                     days = state.travel.days.mapIndexed { dIndex, day ->
                         if (dIndex == index && day != null) day.copy(title = newText)
                         else day
-                    }
-                )
+                    })
             )
         }
 
@@ -99,18 +147,20 @@ class CreateTravelViewModel : ViewModel() {
                             day.copy(
                                 activities = day.activities.mapIndexed { aIndex, activity ->
                                     if (aIndex == activityIndex) newText else activity
-                                }
-                            )
+                                })
                         } else day
-                    }
-                )
+                    })
             )
         }
 
         buildTravelState()
     }
 
-    fun deleteDayOrActivity(index: Int) {
-
+    fun createTravel() = viewModelScope.launch {
+        if (internalTravelId != null) { // User is editing an existing trip
+            repository.updateTravelGuide(travelId = internalTravelId!!, _uiState.value.travel)
+        } else {
+            repository.insertTravelGuide(_uiState.value.travel.copy(travelName = _uiState.value.travelName))
+        }
     }
 }

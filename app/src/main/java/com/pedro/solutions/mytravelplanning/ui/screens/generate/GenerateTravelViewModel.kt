@@ -7,7 +7,7 @@ import com.pedro.solutions.mytravelplanning.data.models.ChatRequest
 import com.pedro.solutions.mytravelplanning.data.models.Message
 import com.pedro.solutions.mytravelplanning.data.models.openai.ErrorMessage
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
-import com.pedro.solutions.mytravelplanning.data.repository.TravelsRepository
+import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class GenerateTravelViewModel(private val repository: TravelsRepository) : ViewModel() {
+class GenerateTravelViewModel(private val repository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(GenerateTravelUiState())
     val uiState = _uiState.asStateFlow()
 
