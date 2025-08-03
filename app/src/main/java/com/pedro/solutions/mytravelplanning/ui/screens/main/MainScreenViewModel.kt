@@ -26,6 +26,6 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
     }
 
     fun openTravelDetail(travelId: Long) = viewModelScope.launch {
-        _uiEvent.emit(MainScreenUiEvent.OpenTravelDetail(travelId))
+        _uiEvent.emit(MainScreenUiEvent.OpenCreateTravelScreen(travelId))
     }
 }

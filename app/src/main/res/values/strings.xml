@@ -38,6 +38,7 @@
     <string name="create_travel_add_new_day">Adicionar novo dia de viagem</string>
     <string name="create_travel_edit">Editar</string>
     <string name="create_travel_add_date">Adicionar data</string>
+    <string name="create_travel_delete_travel">Excluir</string>
     <string name="create_travel_name_placeholder">Nome da viagem</string>
 
     <string name="main_screen_unnamed_travel">(viagem não nomeada)</string>

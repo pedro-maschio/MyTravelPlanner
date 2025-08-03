@@ -28,7 +28,7 @@ import org.koin.androidx.compose.koinViewModel
 fun MainScreen(
     modifier: Modifier = Modifier,
     viewModel: MainScreenViewModel = koinViewModel(),
-    openTravelDetail: (Long) -> Unit
+    openCreateTravelScreen: (Long) -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -39,7 +39,7 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collectLatest {
             when (it) {
-                is MainScreenUiEvent.OpenTravelDetail -> openTravelDetail(it.travelId)
+                is MainScreenUiEvent.OpenCreateTravelScreen -> openCreateTravelScreen(it.travelId)
             }
         }
     }

@@ -54,6 +54,9 @@ interface TravelDao {
     @Update
     suspend fun updateActivityEntities(activities: List<ActivityEntity>)
 
+    @Transaction
+    @Query("DELETE FROM TravelGuideEntity WHERE id = :id")
+    suspend fun deleteTravelGuideEntity(id: Long)
     @Delete
     suspend fun deleteDayEntities(days: List<DayEntity>)
 
@@ -71,26 +74,21 @@ suspend fun TravelDao.updateTravelGuide(
     travelGuideId: Long,
     travelGuide: TravelGuide
 ) {
-    // 1. Update the TravelGuide entity itself
     updateTravelGuideEntity(
         TravelGuideEntity(
             travelName = travelGuide.travelName,
             id = travelGuideId
         )
     )
-
-    // 2. Delete old days (activities will be deleted automatically because of cascade)
     val existingGuide = getAllTravels().firstOrNull { it.travelGuide.id == travelGuideId }
     existingGuide?.let { deleteDayEntities(it.days.map { day -> day.day }) }
 
-    // 3. Insert updated days
     val dayEntities = travelGuide.days
         .filterNotNull()
         .map { day -> DayEntity(title = day.title, travelGuideId = travelGuideId) }
 
     val dayIds = insertDays(dayEntities)
 
-    // 4. Insert updated activities
     dayIds.zip(travelGuide.days.filterNotNull()).forEach { (dayId, day) ->
         val activities = day.activities.map { activity ->
             ActivityEntity(title = activity, dayId = dayId)

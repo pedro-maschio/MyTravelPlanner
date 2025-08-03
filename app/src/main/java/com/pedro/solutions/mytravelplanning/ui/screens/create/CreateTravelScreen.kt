@@ -33,6 +33,7 @@ import com.pedro.solutions.mytravelplanning.ui.theme.Typography
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenSix
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -40,9 +41,11 @@ fun CreateTravelScreen(
     modifier: Modifier = Modifier,
     viewModel: CreateTravelViewModel = koinViewModel(),
     travelId: Long? = null,
+    deleteTravel: Boolean = false,
     isEditing: Boolean = false,
     onFinishEditing: () -> Unit,
-    onTravelCreated: () -> Unit
+    onTravelCreated: () -> Unit,
+    onTravelDeleted: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -58,6 +61,16 @@ fun CreateTravelScreen(
         viewModel.createTravel()
         onTravelCreated()
         backDispatcher?.onBackPressed()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collectLatest {
+            onTravelDeleted()
+        }
+    }
+
+    LaunchedEffect(deleteTravel) {
+        viewModel.deleteTravel(deleteTravel)
     }
 
     LaunchedEffect(Unit) {
@@ -159,5 +172,5 @@ fun CreateTravelScreen(
 @Preview
 @Composable
 fun CreateTravelScreenPreview(modifier: Modifier = Modifier) {
-    CreateTravelScreen(onFinishEditing = {}, onTravelCreated = {})
+    CreateTravelScreen(onFinishEditing = {}, onTravelCreated = {}, onTravelDeleted = {})
 }

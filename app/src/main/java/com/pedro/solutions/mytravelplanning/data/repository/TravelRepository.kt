@@ -52,6 +52,10 @@ class TravelRepository(
         dao.updateTravelGuide(travelGuideId = travelId, travelGuide = travelGuide)
     }
 
+    suspend fun deleteTravel(travelId: Long) {
+        dao.deleteTravelGuideEntity(travelId)
+    }
+
     companion object {
         private const val SHARED_PREFS_NAME = "user_prefs"
 

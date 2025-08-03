@@ -26,20 +26,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.pedro.solutions.mytravelplanning.R
-import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
 import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelDetailScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.generate.GenerateTravelScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreen
 import kotlinx.serialization.json.Json
-import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("RestrictedApi")
@@ -47,14 +46,14 @@ import org.koin.compose.koinInject
 fun AppNavHost(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
+
     val isDropDownMenuShowing = remember { mutableStateOf(false) }
     val isEditing = remember { mutableStateOf(false) }
-    val isOnCreateTravelScreen =
-        navBackStackEntry?.toRoute<TravelsRoutes.CreateTravelScreen>() != null
-    val isOnMainScreen = navBackStackEntry?.toRoute<TravelsRoutes.MainScreen>() != null
-    val repository: TravelRepository = koinInject()
+    val deleteTravel = remember { mutableStateOf(false) }
+    val isOnCreateTravelScreen = navBackStackEntry?.destination?.hasRoute(TravelsRoutes.CreateTravelScreen::class) == true
+    val isOnMainScreen = navBackStackEntry?.destination?.hasRoute(TravelsRoutes.MainScreen::class) == true
+
     val startDestination = TravelsRoutes.MainScreen
-    //if (repository.isShownIntroduction()) TravelsRoutes.GenerateTravelScreen() else TravelsRoutes.IntroScreen
 
     Scaffold(modifier = modifier, topBar = {
         CenterAlignedTopAppBar(
@@ -66,7 +65,7 @@ fun AppNavHost(modifier: Modifier = Modifier) {
             navigationIcon = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = if (!isOnMainScreen && isOnCreateTravelScreen) Arrangement.SpaceBetween else Arrangement.End
                 ) {
                     if (!isOnMainScreen) {
                         IconButton(onClick = {
@@ -101,6 +100,13 @@ fun AppNavHost(modifier: Modifier = Modifier) {
                                     }, onClick = {
                                         isDropDownMenuShowing.value = false
                                     })
+
+                                    DropdownMenuItem(text = {
+                                        Text(text = stringResource(R.string.create_travel_delete_travel))
+                                    }, onClick = {
+                                        deleteTravel.value = true
+                                        isDropDownMenuShowing.value = false
+                                    })
                                 }
                             }
                         }
@@ -131,15 +137,20 @@ fun AppNavHost(modifier: Modifier = Modifier) {
             }
 
             composable<TravelsRoutes.CreateTravelScreen> { navBackStackEntry ->
-                val travelId = navBackStackEntry.toRoute<TravelsRoutes.CreateTravelScreen>().travelId
+                val travelId =
+                    navBackStackEntry.toRoute<TravelsRoutes.CreateTravelScreen>().travelId
 
                 CreateTravelScreen(
                     travelId = travelId,
                     isEditing = isEditing.value,
+                    deleteTravel = deleteTravel.value,
                     onFinishEditing = {
                         isEditing.value = false
                     },
                     onTravelCreated = {
+                        navController.popBackStack()
+                    }, onTravelDeleted = {
+                        deleteTravel.value = false
                         navController.popBackStack()
                     })
             }
@@ -158,8 +169,7 @@ fun AppNavHost(modifier: Modifier = Modifier) {
             }
 
             composable<TravelsRoutes.TravelDetailScreen> { backStackEntry ->
-                val travelData =
-                    backStackEntry.toRoute<TravelsRoutes.TravelDetailScreen>()
+                val travelData = backStackEntry.toRoute<TravelsRoutes.TravelDetailScreen>()
                 TravelDetailScreen(travelData = travelData)
             }
             composable<TravelsRoutes.MainScreen> { backStackEntry ->

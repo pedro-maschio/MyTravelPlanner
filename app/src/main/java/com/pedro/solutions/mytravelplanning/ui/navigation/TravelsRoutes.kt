@@ -1,21 +1,22 @@
 package com.pedro.solutions.mytravelplanning.ui.navigation
 
+
 import kotlinx.serialization.Serializable
 
-
-object TravelsRoutes {
+@Serializable
+sealed class TravelsRoutes {
     @Serializable
-    data object IntroScreen
-
-    @Serializable
-    data class CreateTravelScreen(val travelId: Long? = null)
+    data object IntroScreen: TravelsRoutes()
 
     @Serializable
-    data class GenerateTravelScreen(val id: Int? = null)
+    data class CreateTravelScreen(val travelId: Long? = null): TravelsRoutes()
 
     @Serializable
-    data object MainScreen
+    data class GenerateTravelScreen(val id: Int? = null): TravelsRoutes()
 
     @Serializable
-    data class TravelDetailScreen(val travelId: Long? = null, val travelGuideJson: String? = null)
+    data object MainScreen: TravelsRoutes()
+
+    @Serializable
+    data class TravelDetailScreen(val travelId: Long? = null, val travelGuideJson: String? = null): TravelsRoutes()
 }

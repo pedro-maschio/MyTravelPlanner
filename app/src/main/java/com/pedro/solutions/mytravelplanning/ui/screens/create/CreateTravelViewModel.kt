@@ -6,6 +6,7 @@ import com.pedro.solutions.mytravelplanning.data.models.TravelType
 import com.pedro.solutions.mytravelplanning.data.models.openai.Day
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -13,7 +14,10 @@ import kotlinx.coroutines.launch
 
 class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateTravelUiState())
+    private val _uiEvent = MutableSharedFlow<CreateTravelUiEvent>()
+
     val uiState = _uiState.asStateFlow()
+    val uiEvent = _uiEvent
 
     var internalTravelId: Long? = null
 
@@ -162,5 +166,12 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         } else {
             repository.insertTravelGuide(_uiState.value.travel.copy(travelName = _uiState.value.travelName))
         }
+    }
+
+    fun deleteTravel(isDelete: Boolean) = viewModelScope.launch {
+        if (!isDelete || internalTravelId == null) return@launch
+
+        repository.deleteTravel(internalTravelId!!)
+        _uiEvent.emit(CreateTravelUiEvent.OnTravelDeleted)
     }
 }
