@@ -51,7 +51,7 @@ fun IntroScreen(
     }
 
     Column(
-        modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceAround,
 

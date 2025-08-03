@@ -5,4 +5,4 @@ data class MainScreenTravel(
     val travelName: String,
     val travelId: Long
 )
-data class MainScreenUiState(val travels: List<MainScreenTravel> = emptyList())
+data class MainScreenUiState(val travels: List<MainScreenTravel> = emptyList(), val shouldShowEmptyState: Boolean = false, val isLoading: Boolean = false)

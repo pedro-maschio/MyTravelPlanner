@@ -18,7 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
-import com.pedro.solutions.mytravelplanning.ui.theme.Typography
+import com.pedro.solutions.mytravelplanning.ui.screens.commons.EmptyState
+import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenFive
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
 import kotlinx.coroutines.flow.collectLatest
@@ -44,14 +45,16 @@ fun MainScreen(
         }
     }
 
+    EmptyState(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = DimenFive),
+        isEmpty = uiState.value.shouldShowEmptyState,
+        title = stringResource(R.string.travels_listing_empty_message),
+        supportingText = stringResource(R.string.travels_listing_empty_supporting_text)
+    )
+
     LazyColumn(modifier = modifier.fillMaxSize()) {
-        item {
-            Text(
-                text = stringResource(R.string.travels_listing_title),
-                style = Typography.titleLarge,
-                modifier = Modifier.padding(DimenOne)
-            )
-        }
         items(uiState.value.travels) { travel ->
             TravelCard(travel = travel.travelName.ifBlank { stringResource(R.string.main_screen_unnamed_travel) }) {
                 viewModel.openTravelDetail(travel.travelId)

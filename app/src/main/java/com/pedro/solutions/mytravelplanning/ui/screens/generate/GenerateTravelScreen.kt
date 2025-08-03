@@ -67,12 +67,6 @@ fun GenerateTravelScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    style = Typography.titleLarge,
-                    text = stringResource(R.string.generate_travel_message)
-                )
-                Spacer(modifier = Modifier.height(DimenThree))
-
                 Text(text = stringResource(R.string.generate_travel_starting_point_name))
                 TravelTextField(
                     value = state.value.travel.startingPoint.orEmpty(),
