@@ -42,6 +42,7 @@ fun CreateTravelScreen(
     viewModel: CreateTravelViewModel = koinViewModel(),
     travelId: Long? = null,
     deleteTravel: Boolean = false,
+    createTravel: Boolean = false,
     isEditing: Boolean = false,
     onFinishEditing: () -> Unit,
     onTravelCreated: () -> Unit,
@@ -69,6 +70,13 @@ fun CreateTravelScreen(
         }
     }
 
+    LaunchedEffect(createTravel) {
+        if(createTravel) {
+            viewModel.createTravel()
+            onTravelCreated()
+        }
+    }
+
     LaunchedEffect(deleteTravel) {
         viewModel.deleteTravel(deleteTravel)
     }
@@ -90,11 +98,6 @@ fun CreateTravelScreen(
             state = listState
         ) {
             item {
-                Text(
-                    modifier = Modifier.padding(bottom = DimenTwo),
-                    style = Typography.titleLarge,
-                    text = stringResource(R.string.create_travel_title)
-                )
                 TravelTextField(
                     modifier = Modifier.padding(bottom = DimenTwo),
                     value = uiState.value.travelName,

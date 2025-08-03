@@ -6,11 +6,14 @@
     <string name="travels_listing_departure">Saída em %1$s</string>
     <string name="travels_listing_arrival">Volta em %1$s</string>
     <string name="travels_listing_places_registered">%d roteiros cadastrados</string>
+    <string name="travels_listing_empty_message">Ainda não há nenhum roteiro cadastrado</string>
+    <string name="travels_listing_empty_supporting_text">Comece agora mesmo a criar roteiros incríveis!</string>
+
     <string name="travel_duration_title">Viagem de %d dias</string>
     <string name="login_title">Entre já</string>
     <string name="login_button">Entrar</string>
 
-    <string name="generate_travel_message">Crie um roteiro de viagem</string>
+    <string name="generate_travel_title">Crie um roteiro de viagem</string>
 
     <plurals name="generate_travel_days">
         <item quantity="one">%1$d dia</item>
