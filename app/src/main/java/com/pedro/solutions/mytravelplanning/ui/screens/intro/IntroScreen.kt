@@ -6,11 +6,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
+import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelAppBar
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelButton
 import com.pedro.solutions.mytravelplanning.ui.theme.TravelsColors.PurpleGrey80
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
@@ -50,40 +53,42 @@ fun IntroScreen(
         }
     }
 
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceAround,
+    Scaffold(topBar = {
+        TravelAppBar(title = stringResource(R.string.intro_title))
+    }) { innerPadding ->
+        Column(
+            modifier = modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceAround,
 
-        ) {
-        Text(
-            text = stringResource(R.string.intro_title),
-            style = Typography.titleLarge,
-            textAlign = TextAlign.Center
-        )
-        VehicleCard(
-            vehicleImage = R.drawable.motorcicle, vehicleLabel = R.string.intro_motorcicle_choice,
-            isHighLighted = uiState.value.selectedOption == SelectedOption.MOTORCYCLE
-        ) {
-            viewModel.onSelectedOptionChanged(SelectedOption.MOTORCYCLE)
+            ) {
+            VehicleCard(
+                vehicleImage = R.drawable.motorcicle,
+                vehicleLabel = R.string.intro_motorcicle_choice,
+                isHighLighted = uiState.value.selectedOption == SelectedOption.MOTORCYCLE
+            ) {
+                viewModel.onSelectedOptionChanged(SelectedOption.MOTORCYCLE)
+            }
+            VehicleCard(
+                vehicleImage = R.drawable.car, vehicleLabel = R.string.intro_car_choice,
+                isHighLighted = uiState.value.selectedOption == SelectedOption.CAR
+            ) {
+                viewModel.onSelectedOptionChanged(SelectedOption.CAR)
+            }
+
+            TravelButton(enabled = uiState.value.isSaveButtonShowing, onClick = {
+                viewModel.onSaveSelectedVehicle()
+            }, text = stringResource(R.string.intro_save_button))
+
+            Text(
+                text = stringResource(R.string.intro_info_text),
+                style = Typography.labelSmall,
+                textAlign = TextAlign.Center
+            )
+
         }
-        VehicleCard(
-            vehicleImage = R.drawable.car, vehicleLabel = R.string.intro_car_choice,
-            isHighLighted = uiState.value.selectedOption == SelectedOption.CAR
-        ) {
-            viewModel.onSelectedOptionChanged(SelectedOption.CAR)
-        }
-
-        TravelButton(enabled = uiState.value.isSaveButtonShowing, onClick = {
-            viewModel.onSaveSelectedVehicle()
-        }, text = stringResource(R.string.intro_save_button))
-
-        Text(
-            text = stringResource(R.string.intro_info_text),
-            style = Typography.labelSmall,
-            textAlign = TextAlign.Center
-        )
-
     }
 }
 

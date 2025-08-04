@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
-import com.pedro.solutions.mytravelplanning.ui.navigation.TravelsRoutes
+import com.pedro.solutions.mytravelplanning.ui.navigation.TravelRoutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -16,7 +16,7 @@ class TravelDetailViewModel(val repository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(TravelDetailUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun loadTravelDetail(travelData: TravelsRoutes.TravelDetailScreen) = viewModelScope.launch {
+    fun loadTravelDetail(travelData: TravelRoutes.TravelDetailScreen) = viewModelScope.launch {
         val travelGuide = travelData.travelGuideJson
         val travelItems = mutableListOf<TravelType>()
         try {

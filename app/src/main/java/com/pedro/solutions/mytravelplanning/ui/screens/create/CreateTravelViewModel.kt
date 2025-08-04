@@ -173,10 +173,22 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         _uiEvent.emit(CreateTravelUiEvent.OnTravelCreated)
     }
 
-    fun deleteTravel() = viewModelScope.launch {
-        if (internalTravelId == null) return@launch
+    fun showDeleteDialog() {
+        _uiState.update { it.copy(isDeleteDialogShowing = true) }
+    }
 
-        repository.deleteTravel(internalTravelId!!)
+    fun hideDeleteDialog() {
+        setDropdownMenuShowing(false)
+        _uiState.update { it.copy(isDeleteDialogShowing = false) }
+    }
+
+    fun deleteTravel() = viewModelScope.launch {
+        hideDeleteDialog()
+        if (internalTravelId != null) {
+            repository.deleteTravel(internalTravelId!!)
+        }
+        // We emit the event anyway. A new travel does not have an id yet,
+        // but we are showing the "Delete" option for them also.
         _uiEvent.emit(CreateTravelUiEvent.OnTravelDeleted)
     }
 }

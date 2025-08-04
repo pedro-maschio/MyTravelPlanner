@@ -7,6 +7,7 @@ data class CreateTravelUiState(
     val travels: List<TravelType> = emptyList(),
     val travel: TravelGuide = TravelGuide(),
     val travelName: String = "",
+    val isDeleteDialogShowing: Boolean = false,
     val isDropDownMenuShowing: Boolean = false,
     val isLoading: Boolean = false,
     val isEditing: Boolean = false

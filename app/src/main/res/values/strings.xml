@@ -3,6 +3,12 @@
     <string name="empty_message">Não há viagens cadastradas ainda. Comece agora mesmo cadastrando o seu próximo destino!</string>
 
     <string name="travels_listing_title">Suas próximas viagens</string>
+    <string name="travels_listing_unnamed_travel">(viagem não nomeada)</string>
+    <string name="travels_listing_delete_dropdown_title">Excluir itens selecionados</string>
+    <string name="travels_listing_delete_dialog_title">Deseja excluir os roteiros?</string>
+    <string name="travels_listing_delete_dialog_message">Ao confirmar, %1$d roteiro(s) será(ão) excluído(s).</string>
+    <string name="travels_listing_delete_dialog_confirm_message">Excluir</string>
+    <string name="travels_listing_delete_dialog_cancel_message">Cancelar</string>
     <plurals name="travels_listing_selected_items">
         <item quantity="one">%1$d item selecionado</item>
         <item quantity="other">%1$d itens selecionados</item>
@@ -47,7 +53,6 @@
     <string name="create_travel_add_date">Adicionar data</string>
     <string name="create_travel_delete_travel">Excluir</string>
     <string name="create_travel_name_placeholder">Nome da viagem</string>
-
-    <string name="main_screen_unnamed_travel">(viagem não nomeada)</string>
-
+    <string name="create_travel_delete_dialog_title">Deseja excluir o roteiro?</string>
+    <string name="create_travel_delete_dialog_message">Ao confirmar, o roteiro será excluído permanentemente.</string>
 </resources>

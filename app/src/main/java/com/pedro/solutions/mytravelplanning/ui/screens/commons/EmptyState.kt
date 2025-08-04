@@ -41,14 +41,14 @@ fun EmptyState(
             Text(
                 text = title,
                 modifier = Modifier.padding(top = DimenTwo),
-                style = Typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                style = Typography.titleMedium.copy(fontWeight = FontWeight.Medium)
             )
 
             supportingText?.let {
                 Text(
                     text = it,
                     modifier = Modifier.padding(top = DimenOne),
-                    style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                    style = Typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                 )
             }
         }

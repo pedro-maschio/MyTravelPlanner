@@ -16,13 +16,16 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -79,6 +82,45 @@ fun CreateTravelScreen(
         viewModel.addDefaultDay()
     }
 
+    if (uiState.value.isDeleteDialogShowing) {
+        AlertDialog(
+            icon = {
+                Icon(Icons.Default.Info, contentDescription = null)
+            },
+            title = {
+                Text(text = stringResource(R.string.create_travel_delete_dialog_title))
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        R.string.create_travel_delete_dialog_message,
+                    )
+                )
+            },
+            onDismissRequest = {
+                viewModel.hideDeleteDialog()
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteTravel()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.travels_listing_delete_dialog_confirm_message))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.hideDeleteDialog()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.travels_listing_delete_dialog_cancel_message))
+                }
+            }
+        )
+    }
+
 
     CreateTravelScaffold { innerPadding ->
         if (uiState.value.isLoading) {
@@ -87,13 +129,14 @@ fun CreateTravelScreen(
             LazyColumn(
                 modifier = modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .padding(horizontal = DimenTwo),
                 verticalArrangement = Arrangement.spacedBy(DimenOne),
                 state = listState
             ) {
                 item {
                     TravelTextField(
-                        modifier = Modifier.padding(vertical = DimenOne, horizontal = DimenTwo),
+                        modifier = Modifier.padding(vertical = DimenOne),
                         value = uiState.value.travelName,
                         placeHolder = stringResource(R.string.create_travel_name_placeholder),
                         onValueChange = {
@@ -103,7 +146,7 @@ fun CreateTravelScreen(
 
                 itemsIndexed(uiState.value.travels) { index, item ->
                     Row(
-                        modifier = Modifier.padding(vertical = DimenHalf, horizontal = DimenTwo),
+                        modifier = Modifier.padding(vertical = DimenHalf),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         when (item) {
@@ -201,8 +244,7 @@ fun CreateTravelTopBar(
                         DropdownMenuItem(text = {
                             Text(text = stringResource(R.string.create_travel_delete_travel))
                         }, onClick = {
-                            viewModel.setDropdownMenuShowing(false)
-                            viewModel.deleteTravel()
+                            viewModel.showDeleteDialog()
                         })
                     }
                 }

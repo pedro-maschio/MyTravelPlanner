@@ -12,7 +12,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -23,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -61,14 +64,45 @@ fun MainScreen(
         }
     }
 
-    EmptyState(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = DimenFive),
-        isEmpty = uiState.value.shouldShowEmptyState,
-        title = stringResource(R.string.travels_listing_empty_message),
-        supportingText = stringResource(R.string.travels_listing_empty_supporting_text)
-    )
+    if (uiState.value.isDeleteDialogShowing) {
+        AlertDialog(
+            icon = {
+                Icon(Icons.Default.Info, contentDescription = null)
+            },
+            title = {
+                Text(text = stringResource(R.string.travels_listing_delete_dialog_title))
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        R.string.travels_listing_delete_dialog_message,
+                        uiState.value.selectedTravelIds.size
+                    )
+                )
+            },
+            onDismissRequest = {
+                viewModel.hideDeleteDialog()
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onDeleteTravelsClick()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.travels_listing_delete_dialog_confirm_message))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.hideDeleteDialog()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.travels_listing_delete_dialog_cancel_message))
+                }
+            }
+        )
+    }
 
     val topBarText = if (uiState.value.isOnSelectionMode) {
         pluralStringResource(
@@ -81,7 +115,7 @@ fun MainScreen(
     }
 
     @Composable
-    fun SelectionModeAction(modifier: Modifier = Modifier) {
+    fun SelectionModeAction() {
         uiState.value.isOnSelectionMode.takeIf { it }?.let {
             IconButton(onClick = {
                 viewModel.setDropdownMenuShowing(true)
@@ -95,9 +129,9 @@ fun MainScreen(
                             viewModel.setDropdownMenuShowing(false)
                         }) {
                         DropdownMenuItem(text = {
-                            Text(text = stringResource(R.string.create_travel_delete_travel))
+                            Text(text = stringResource(R.string.travels_listing_delete_dropdown_title))
                         }, onClick = {
-                            viewModel.onDeleteTravelsClick()
+                            viewModel.showDeleteDialog()
                         })
                     }
                 }
@@ -136,6 +170,16 @@ fun MainScreen(
                     }
                 })
             }
+            item {
+                EmptyState(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = DimenFive),
+                    isEmpty = uiState.value.shouldShowEmptyState,
+                    title = stringResource(R.string.travels_listing_empty_message),
+                    supportingText = stringResource(R.string.travels_listing_empty_supporting_text)
+                )
+            }
         }
     }
 }
@@ -160,7 +204,7 @@ fun TravelCard(
                 .padding(horizontal = DimenOne),
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = travel.travelName.ifBlank { stringResource(R.string.main_screen_unnamed_travel) })
+            Text(text = travel.travelName.ifBlank { stringResource(R.string.travels_listing_unnamed_travel) })
         }
     }
 

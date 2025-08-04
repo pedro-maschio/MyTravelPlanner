@@ -12,6 +12,7 @@ data class MainScreenUiState(
     val shouldShowEmptyState: Boolean = false,
     val isLoading: Boolean = false,
     val isDropDownMenuShowing: Boolean = false,
+    val isDeleteDialogShowing: Boolean = false,
     val isOnSelectionMode: Boolean = false,
     val selectedTravelIds: HashSet<Long> = hashSetOf()
 )

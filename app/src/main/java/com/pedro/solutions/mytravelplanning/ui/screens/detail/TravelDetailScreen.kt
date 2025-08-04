@@ -24,7 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
-import com.pedro.solutions.mytravelplanning.ui.navigation.TravelsRoutes
+import com.pedro.solutions.mytravelplanning.ui.navigation.TravelRoutes
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenThree
@@ -35,7 +35,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun TravelDetailScreen(
     modifier: Modifier = Modifier,
-    travelData: TravelsRoutes.TravelDetailScreen,
+    travelData: TravelRoutes.TravelDetailScreen,
     viewModel: TravelDetailViewModel = koinViewModel()
 ) {
     LaunchedEffect(Unit) {

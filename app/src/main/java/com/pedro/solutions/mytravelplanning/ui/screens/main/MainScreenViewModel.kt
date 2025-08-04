@@ -73,6 +73,16 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
             loadTravels()
         }
         setOnSelectionMode(false)
+        hideDeleteDialog()
+    }
+
+    fun hideDeleteDialog() {
+        _uiState.update { it.copy(isDeleteDialogShowing = false) }
+        setDropdownMenuShowing(false)
+    }
+
+    fun showDeleteDialog() {
+        _uiState.update { it.copy(isDeleteDialogShowing = true) }
     }
 
     fun setDropdownMenuShowing(isShowing: Boolean) {
