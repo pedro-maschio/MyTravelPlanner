@@ -3,6 +3,10 @@
     <string name="empty_message">Não há viagens cadastradas ainda. Comece agora mesmo cadastrando o seu próximo destino!</string>
 
     <string name="travels_listing_title">Suas próximas viagens</string>
+    <plurals name="travels_listing_selected_items">
+        <item quantity="one">%1$d item selecionado</item>
+        <item quantity="other">%1$d itens selecionados</item>
+    </plurals>
     <string name="travels_listing_departure">Saída em %1$s</string>
     <string name="travels_listing_arrival">Volta em %1$s</string>
     <string name="travels_listing_places_registered">%d roteiros cadastrados</string>

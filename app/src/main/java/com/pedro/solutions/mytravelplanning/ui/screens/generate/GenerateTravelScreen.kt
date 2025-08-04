@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -29,10 +30,9 @@ import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.ConnectionError
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.LoadingState
+import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelAppBar
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelButton
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelTextField
-import com.pedro.solutions.mytravelplanning.ui.theme.Typography
-import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenThree
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
@@ -53,125 +53,143 @@ fun GenerateTravelScreen(
         }
     }
 
-
-    if (state.value.showErrorScreen || state.value.isLoading) {
-        ConnectionError(isShowing = state.value.showErrorScreen) {
-            viewModel.generateTravel()
-        }
-        LoadingState(isLoading = state.value.isLoading)
-    } else {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(DimenTwo)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = stringResource(R.string.generate_travel_starting_point_name))
-                TravelTextField(
-                    value = state.value.travel.startingPoint.orEmpty(),
-                    onValueChange = {
-                        viewModel.updateStartingPoint(it)
-                    }
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TravelAppBar(
+                title = stringResource(
+                    R.string.generate_travel_title
                 )
-                Spacer(modifier = Modifier.height(DimenTwo))
+            )
+        }) { innerPadding ->
 
-                Text(text = stringResource(R.string.generate_travel_ending_point_name))
-                TravelTextField(
-                    value = state.value.travel.endingPoint.orEmpty(),
-                    onValueChange = {
-                        viewModel.updateEndingPoint(it)
-                    }
-                )
-                Spacer(modifier = Modifier.height(DimenTwo))
-
-                Text(text = stringResource(R.string.generate_travel_duration_in_days))
-
-
-                Box(modifier = Modifier.clickable {
-                    viewModel.showDropDown()
-                }) {
+        if (state.value.showErrorScreen || state.value.isLoading) {
+            ConnectionError(
+                modifier = Modifier.padding(innerPadding),
+                isShowing = state.value.showErrorScreen
+            ) {
+                viewModel.generateTravel()
+            }
+            LoadingState(
+                modifier = Modifier.padding(innerPadding),
+                isLoading = state.value.isLoading
+            )
+        } else {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = stringResource(R.string.generate_travel_starting_point_name))
                     TravelTextField(
-                        value = state.value.travel.durationInDays,
-                        colors = TextFieldDefaults.colors(
-                            disabledTextColor = Color.White,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        ),
-                        enabled = false,
-                        trailingIcon = {
-                            Icon(Icons.Filled.ArrowDropDown, null)
+                        value = state.value.travel.startingPoint.orEmpty(),
+                        onValueChange = {
+                            viewModel.updateStartingPoint(it)
                         }
                     )
-                }
+                    Spacer(modifier = Modifier.height(DimenTwo))
 
-                Box {
-                    DropdownMenu(expanded = state.value.isDropDownMenuShowing, onDismissRequest = {
-                        viewModel.hideDropDown()
+                    Text(text = stringResource(R.string.generate_travel_ending_point_name))
+                    TravelTextField(
+                        value = state.value.travel.endingPoint.orEmpty(),
+                        onValueChange = {
+                            viewModel.updateEndingPoint(it)
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(DimenTwo))
+
+                    Text(text = stringResource(R.string.generate_travel_duration_in_days))
+
+
+                    Box(modifier = Modifier.clickable {
+                        viewModel.showDropDown()
                     }) {
-                        DropdownMenuItem(
-                            text = {
+                        TravelTextField(
+                            value = state.value.travel.durationInDays,
+                            colors = TextFieldDefaults.colors(
+                                disabledTextColor = Color.White,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent
+                            ),
+                            enabled = false,
+                            trailingIcon = {
+                                Icon(Icons.Filled.ArrowDropDown, null)
+                            }
+                        )
+                    }
+
+                    Box {
+                        DropdownMenu(
+                            expanded = state.value.isDropDownMenuShowing,
+                            onDismissRequest = {
+                                viewModel.hideDropDown()
+                            }) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        pluralStringResource(
+                                            R.plurals.generate_travel_days,
+                                            1,
+                                            1
+                                        )
+                                    )
+                                },
+                                onClick = {
+                                    viewModel.updateDuration("1")
+                                })
+                            DropdownMenuItem(text = {
                                 Text(
                                     pluralStringResource(
                                         R.plurals.generate_travel_days,
-                                        1,
-                                        1
+                                        2,
+                                        2
                                     )
                                 )
-                            },
-                            onClick = {
-                                viewModel.updateDuration("1")
+                            }, onClick = {
+                                viewModel.updateDuration("2")
                             })
-                        DropdownMenuItem(text = {
-                            Text(
-                                pluralStringResource(
-                                    R.plurals.generate_travel_days,
-                                    2,
-                                    2
+                            DropdownMenuItem(text = {
+                                Text(
+                                    pluralStringResource(
+                                        R.plurals.generate_travel_days,
+                                        7,
+                                        7
+                                    )
                                 )
-                            )
-                        }, onClick = {
-                            viewModel.updateDuration("2")
-                        })
-                        DropdownMenuItem(text = {
-                            Text(
-                                pluralStringResource(
-                                    R.plurals.generate_travel_days,
-                                    7,
-                                    7
+                            }, onClick = {
+                                viewModel.updateDuration("7")
+                            })
+                            DropdownMenuItem(text = {
+                                Text(
+                                    pluralStringResource(
+                                        R.plurals.generate_travel_days,
+                                        14,
+                                        14
+                                    )
                                 )
-                            )
-                        }, onClick = {
-                            viewModel.updateDuration("7")
-                        })
-                        DropdownMenuItem(text = {
-                            Text(
-                                pluralStringResource(
-                                    R.plurals.generate_travel_days,
-                                    14,
-                                    14
-                                )
-                            )
-                        }, onClick = {
-                            viewModel.updateDuration("14")
-                        })
+                            }, onClick = {
+                                viewModel.updateDuration("14")
+                            })
+                        }
                     }
+
+                    Spacer(modifier = Modifier.height(DimenTwo))
+
+                    Text(text = state.value.errorMessage)
                 }
-
-                Spacer(modifier = Modifier.height(DimenTwo))
-
-                Text(text = state.value.errorMessage)
-            }
-            TravelButton(
-                modifier = Modifier.align(Alignment.End),
-                onClick = {
-                    viewModel.generateTravel()
-                },
-                text = if (travelId != null) stringResource(R.string.edit_travel_button) else stringResource(
-                    R.string.generate_travel_button
+                TravelButton(
+                    modifier = Modifier.align(Alignment.End),
+                    onClick = {
+                        viewModel.generateTravel()
+                    },
+                    text = if (travelId != null) stringResource(R.string.edit_travel_button) else stringResource(
+                        R.string.generate_travel_button
+                    )
                 )
-            )
+            }
         }
     }
 }

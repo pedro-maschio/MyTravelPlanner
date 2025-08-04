@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
@@ -181,89 +180,4 @@ fun TravelActivity(modifier: Modifier = Modifier, title: String) {
     ElevatedCard(modifier = modifier.padding(vertical = DimenOne)) {
         Text(modifier = Modifier.padding(DimenOne), text = title, style = Typography.bodyLarge)
     }
-}
-
-@Preview
-@Composable
-fun TravelDetailScreenPreview(modifier: Modifier = Modifier) {
-//    val travelItems = listOf(
-//        TravelType.Day(index = 0, title = "Dia 1: Chegada e Centro Histórico"),
-//        TravelType.Activity(dayIndex = 0, "Saída de Brasília cedo para chegar antes do almoço."),
-//        TravelType.Activity(
-//            dayIndex = 0,
-//            "Check-in em uma pousada charmosa, como Pousada dos Pirineus ou Casarão Villa do Império."
-//        ),
-//        TravelType.Day(index = 1, title = "Dia 2: Cachoeiras e Serra dos Pireneus"),
-//        TravelType.Activity(dayIndex = 1, "Café da manhã reforçado na pousada."),
-//        TravelType.Activity(
-//            dayIndex = 1,
-//            "Visita à Cachoeira do Abade (trilha leve, ótima para banho)"
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 1,
-//            "Alternativa: Cachoeira Meia Lua (mais próxima do centro)."
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 1,
-//            "Restaurante Fazenda Babilônia (famoso por seu café colonial e comida típica)."
-//        ),
-//        TravelType.Day(index = 2, title = "Dia 3: Últimas Cachoeiras e Despedida"),
-//        TravelType.Activity(dayIndex = 2, "Café da manhã e checkout da pousada."),
-//        TravelType.Activity(
-//            dayIndex = 2,
-//            "Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 2,
-//            "Visita à Cachoeira Bonsucesso (conjunto de quedas d’água com trilhas fáceis)."
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 2,
-//            "Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 2,
-//            "Caminhada leve pelo centro para últimas compras (artesanato, licores e doces)."
-//        ),
-//        TravelType.Day(index = 3, title = "Dia 1: Chegada e Centro Histórico"),
-//        TravelType.Activity(dayIndex = 3, "Saída de Brasília cedo para chegar antes do almoço."),
-//        TravelType.Activity(
-//            dayIndex = 3,
-//            "Check-in em uma pousada charmosa, como Pousada dos Pirineus ou Casarão Villa do Império."
-//        ),
-//        TravelType.Day(index = 4, title = "Dia 2: Cachoeiras e Serra dos Pireneus"),
-//        TravelType.Activity(dayIndex = 4, "Café da manhã reforçado na pousada."),
-//        TravelType.Activity(
-//            dayIndex = 4,
-//            "Visita à Cachoeira do Abade (trilha leve, ótima para banho)"
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 4,
-//            "Alternativa: Cachoeira Meia Lua (mais próxima do centro)."
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 4,
-//            "Restaurante Fazenda Babilônia (famoso por seu café colonial e comida típica)."
-//        ),
-//        TravelType.Day(index = 5, title = "Dia 3: Últimas Cachoeiras e Despedida"),
-//        TravelType.Activity(dayIndex = 5, "Café da manhã e checkout da pousada."),
-//        TravelType.Activity(
-//            dayIndex = 5,
-//            "Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 5,
-//            "Visita à Cachoeira Bonsucesso (conjunto de quedas d’água com trilhas fáceis)."
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 5,
-//            "Restaurante Central (pratos regionais fartos) ou retorno ao \"Dona Cida\" se quiser repetir a experiência."
-//        ),
-//        TravelType.Activity(
-//            dayIndex = 5,
-//            "Caminhada leve pelo centro para últimas compras (artesanato, licores e doces)."
-//        )
-//    )
-//
-//    TravelDetailScreen(travelItems = travelItems)
 }

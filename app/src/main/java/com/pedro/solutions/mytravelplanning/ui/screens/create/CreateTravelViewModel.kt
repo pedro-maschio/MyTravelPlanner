@@ -160,16 +160,21 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         buildTravelState()
     }
 
+    fun setDropdownMenuShowing(isShowing: Boolean) {
+        _uiState.update { it.copy(isDropDownMenuShowing = isShowing) }
+    }
+
     fun createTravel() = viewModelScope.launch {
         if (internalTravelId != null) { // User is editing an existing trip
             repository.updateTravelGuide(travelId = internalTravelId!!, _uiState.value.travel)
         } else {
             repository.insertTravelGuide(_uiState.value.travel.copy(travelName = _uiState.value.travelName))
         }
+        _uiEvent.emit(CreateTravelUiEvent.OnTravelCreated)
     }
 
-    fun deleteTravel(isDelete: Boolean) = viewModelScope.launch {
-        if (!isDelete || internalTravelId == null) return@launch
+    fun deleteTravel() = viewModelScope.launch {
+        if (internalTravelId == null) return@launch
 
         repository.deleteTravel(internalTravelId!!)
         _uiEvent.emit(CreateTravelUiEvent.OnTravelDeleted)
