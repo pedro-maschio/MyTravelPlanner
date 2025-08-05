@@ -1,5 +1,7 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.create
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateTravelUiState())
     private val _uiEvent = MutableSharedFlow<CreateTravelUiEvent>()
@@ -166,9 +169,18 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
 
     fun createTravel() = viewModelScope.launch {
         if (internalTravelId != null) { // User is editing an existing trip
-            repository.updateTravelGuide(travelId = internalTravelId!!, _uiState.value.travel)
+            repository.updateTravelGuide(
+                travelId = internalTravelId!!,
+                _uiState.value.travel.copy(updatedAt = System.currentTimeMillis())
+            )
         } else {
-            repository.insertTravelGuide(_uiState.value.travel.copy(travelName = _uiState.value.travelName))
+            repository.insertTravelGuide(
+                _uiState.value.travel.copy(
+                    travelName = _uiState.value.travelName,
+                    createdAt = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
         }
         _uiEvent.emit(CreateTravelUiEvent.OnTravelCreated)
     }

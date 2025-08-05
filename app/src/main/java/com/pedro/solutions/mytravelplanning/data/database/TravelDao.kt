@@ -35,7 +35,7 @@ data class TravelGuideWithDays(
 @Dao
 interface TravelDao {
     @Transaction
-    @Query("SELECT * FROM TravelGuideEntity")
+    @Query("SELECT * FROM TravelGuideEntity ORDER BY createdAt DESC")
     suspend fun getAllTravels(): List<TravelGuideWithDays>
 
     @Transaction
@@ -57,6 +57,7 @@ interface TravelDao {
     @Transaction
     @Query("DELETE FROM TravelGuideEntity WHERE id = :id")
     suspend fun deleteTravelGuideEntity(id: Long)
+
     @Delete
     suspend fun deleteDayEntities(days: List<DayEntity>)
 
@@ -77,7 +78,9 @@ suspend fun TravelDao.updateTravelGuide(
     updateTravelGuideEntity(
         TravelGuideEntity(
             travelName = travelGuide.travelName,
-            id = travelGuideId
+            id = travelGuideId,
+            createdAt = travelGuide.createdAt,
+            updatedAt = travelGuide.updatedAt
         )
     )
     val existingGuide = getAllTravels().firstOrNull { it.travelGuide.id == travelGuideId }
@@ -98,7 +101,13 @@ suspend fun TravelDao.updateTravelGuide(
 }
 
 suspend fun TravelDao.insertTravelGuide(travelGuide: TravelGuide) {
-    val travelGuideId = insertTravelGuide(TravelGuideEntity(travelName = travelGuide.travelName))
+    val travelGuideId = insertTravelGuide(
+        TravelGuideEntity(
+            travelName = travelGuide.travelName,
+            createdAt = travelGuide.createdAt,
+            updatedAt = travelGuide.updatedAt
+        )
+    )
 
     val dayEntities = travelGuide.days
         .filterNotNull()

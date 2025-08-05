@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -23,6 +22,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,11 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.EmptyState
 import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelAppBar
+import com.pedro.solutions.mytravelplanning.ui.theme.Typography
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenFive
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
@@ -190,13 +192,14 @@ fun TravelCard(
     onLongClick: () -> Unit,
     onClick: () -> Unit
 ) {
-    Card(
+    OutlinedCard(
         modifier = Modifier
             .height(80.dp)
             .fillMaxWidth()
             .padding(all = DimenTwo)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        colors = CardDefaults.cardColors(containerColor = if (travel.isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = if (travel.isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.elevatedCardElevation()
     ) {
         Column(
             modifier = Modifier
@@ -204,8 +207,21 @@ fun TravelCard(
                 .padding(horizontal = DimenOne),
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = travel.travelName.ifBlank { stringResource(R.string.travels_listing_unnamed_travel) })
+            Text(
+                text = travel.travelName.ifBlank { stringResource(R.string.travels_listing_unnamed_travel) },
+                style = Typography.titleMedium
+            )
         }
     }
+}
 
+@Preview
+@Composable
+fun TravelCardPreview(modifier: Modifier = Modifier) {
+    TravelCard(
+        travel = MainScreenTravel(
+            travelName = "Viagem para a disney",
+            travelId = -1,
+            isSelected = false
+        ), onLongClick = { }) { }
 }

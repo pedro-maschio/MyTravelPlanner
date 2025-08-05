@@ -8,7 +8,9 @@ import androidx.room.PrimaryKey
 @Entity
 data class TravelGuideEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val travelName: String
+    val travelName: String,
+    val createdAt: Long,
+    val updatedAt: Long
 )
 
 @Entity(
