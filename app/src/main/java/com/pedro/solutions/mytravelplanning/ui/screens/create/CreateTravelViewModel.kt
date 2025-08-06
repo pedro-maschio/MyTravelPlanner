@@ -38,7 +38,10 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
                 Day(
                     title = dayWithActivities.day.title,
                     activities = dayWithActivities.activities.map { it.title })
-            })
+            },
+            createdAt = travelGuideWithDays.travelGuide.createdAt,
+            updatedAt = travelGuideWithDays.travelGuide.updatedAt
+        )
         _uiState.update { it.copy(travel = travelGuide) }
         buildTravelState()
         hideLoading()
