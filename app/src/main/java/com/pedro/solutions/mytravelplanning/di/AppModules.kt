@@ -29,7 +29,8 @@ val appModules = module {
 
     single {
         Room.databaseBuilder(androidApplication(), TravelDatabase::class.java, "travel_database")
-            .build()
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build() // TODO: Remove in production
     }
 
     single {

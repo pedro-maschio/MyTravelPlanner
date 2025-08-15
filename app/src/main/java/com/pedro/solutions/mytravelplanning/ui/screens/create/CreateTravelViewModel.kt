@@ -1,7 +1,9 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.create
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
@@ -195,6 +197,75 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     fun hideDeleteDialog() {
         setDropdownMenuShowing(false)
         _uiState.update { it.copy(isDeleteDialogShowing = false) }
+    }
+
+    fun setIsEditing(isEditing: Boolean) {
+        _uiState.update { it.copy(isEditing = isEditing) }
+
+        if (!isEditing) {
+            updateDaysIndexes()
+            buildTravelState()
+        }
+    }
+
+    fun moveActivity(fromIndex: Int, toIndex: Int) {
+        Log.d(
+            "PEDRO123",
+            "fromIndex=$fromIndex, toIndex=$toIndex uiState.value.travels.size=${uiState.value.travels.size}"
+        )
+        val travels = uiState.value.travels.toMutableList()
+        val activity = travels.removeAt(fromIndex)
+        if (toIndex >= travels.size) {
+            travels.add(activity)
+        } else {
+            travels.add(toIndex, activity)
+        }
+        _uiState.update { it.copy(travels = travels) }
+    }
+
+    private fun updateDaysIndexes() {
+        val travels = uiState.value.travels.toMutableList()
+
+        var lastDayIndex = 0
+        val updatedTravels: List<TravelType> = travels.mapIndexed { index, travelType ->
+            if (travelType is TravelType.Activity) {
+                TravelType.Activity(lastDayIndex - index - 1, lastDayIndex, travelType.title)
+            } else {
+                lastDayIndex++
+                TravelType.Day((travelType as TravelType.Day).index, travelType.title)
+            }
+        }
+        Log.d("PEDRO123", "updatedTravels=$updatedTravels")
+        _uiState.update { it.copy(travels = updatedTravels.toList()) }
+    }
+
+    fun updateDraggableItemIndex(index: Int) {
+        _uiState.update { it.copy(draggingIndex = index) }
+    }
+
+    fun resetDragging() {
+        Log.d("PEDRO123", "resetDragging called")
+        _uiState.update { it.copy(draggingAmount = 0f, draggingIndex = null, draggingItem = null) }
+    }
+
+    fun updateDragAmountY(y: Float) {
+        _uiState.update { it.copy(draggingAmount = _uiState.value.draggingAmount + y) }
+    }
+
+    fun updateDraggingItem(info: LazyListItemInfo?) {
+        _uiState.update { it.copy(draggingItem = info) }
+    }
+
+    fun deleteDay(index: Int) {
+        _uiState.update { state ->
+            state.copy(
+                travel = state.travel.copy(
+                    days = state.travel.days.filterIndexed { dIndex, _ ->
+                        dIndex != index
+                    })
+            )
+        }
+        buildTravelState()
     }
 
     fun deleteTravel() = viewModelScope.launch {

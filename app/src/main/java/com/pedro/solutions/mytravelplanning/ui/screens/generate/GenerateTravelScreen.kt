@@ -28,11 +28,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
-import com.pedro.solutions.mytravelplanning.ui.screens.commons.ConnectionError
-import com.pedro.solutions.mytravelplanning.ui.screens.commons.LoadingState
-import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelAppBar
-import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelButton
-import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelTextField
+import com.pedro.solutions.mytravelplanning.ui.components.ConnectionError
+import com.pedro.solutions.mytravelplanning.ui.components.LoadingState
+import com.pedro.solutions.mytravelplanning.ui.components.TravelAppBar
+import com.pedro.solutions.mytravelplanning.ui.components.TravelButton
+import com.pedro.solutions.mytravelplanning.ui.components.TravelTextField
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel

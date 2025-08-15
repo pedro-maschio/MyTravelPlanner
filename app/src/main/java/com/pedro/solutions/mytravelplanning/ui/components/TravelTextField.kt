@@ -1,6 +1,5 @@
-package com.pedro.solutions.mytravelplanning.ui.screens.commons
+package com.pedro.solutions.mytravelplanning.ui.components
 
-import android.R.attr.enabled
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +19,8 @@ fun TravelTextField(
     placeHolder: String = "",
     colors: TextFieldColors = TextFieldDefaults.colors(
         unfocusedIndicatorColor = Color.Transparent,
-        focusedIndicatorColor = Color.Transparent
+        focusedIndicatorColor = Color.Transparent,
+        disabledIndicatorColor = Color.Transparent
     ),
     trailingIcon: @Composable (() -> Unit)? = null,
     enabled: Boolean = true,

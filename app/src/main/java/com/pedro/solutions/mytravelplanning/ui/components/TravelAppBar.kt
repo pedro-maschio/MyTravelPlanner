@@ -1,4 +1,4 @@
-package com.pedro.solutions.mytravelplanning.ui.screens.commons
+package com.pedro.solutions.mytravelplanning.ui.components
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ExperimentalMaterial3Api

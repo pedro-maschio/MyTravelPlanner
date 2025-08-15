@@ -36,8 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
-import com.pedro.solutions.mytravelplanning.ui.screens.commons.EmptyState
-import com.pedro.solutions.mytravelplanning.ui.screens.commons.TravelAppBar
+import com.pedro.solutions.mytravelplanning.ui.components.EmptyState
+import com.pedro.solutions.mytravelplanning.ui.components.TravelAppBar
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenFive
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
