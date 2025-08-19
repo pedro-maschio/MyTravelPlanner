@@ -1,5 +1,8 @@
 package com.pedro.solutions.mytravelplanning.ui.navigation
 
+import android.os.Build
+import androidx.activity.compose.LocalActivity
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -15,9 +18,11 @@ import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreen
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavHost(modifier: Modifier = Modifier, repository: TravelRepository = koinInject()) {
     val navController = rememberNavController()
+    val activity = LocalActivity.current
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -35,6 +40,10 @@ fun AppNavHost(modifier: Modifier = Modifier, repository: TravelRepository = koi
                 navController.navigate(TravelRoutes.CreateTravelScreen())
             }, onClickTravelItem = { travelId ->
                 navController.navigate(TravelRoutes.CreateTravelScreen(travelId = travelId))
+            }, onGoBack = {
+                if (!navController.popBackStack()) {
+                    activity?.finish()
+                }
             })
         }
 

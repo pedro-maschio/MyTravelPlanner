@@ -24,13 +24,18 @@ class TravelDetailViewModel(val repository: TravelRepository) : ViewModel() {
                 Json.decodeFromString<TravelGuide>(travelGuide).days.forEachIndexed { index, item ->
                     travelItems.add(
                         TravelType.Day(
-                            index = index, title = item?.title.orEmpty()
+                            id = item.hashCode().toLong(),
+                            index = index,
+                            title = item?.title.orEmpty()
                         )
                     )
                     item?.activities?.forEachIndexed { activityIndex, activity ->
                         travelItems.add(
                             TravelType.Activity(
-                                index = activityIndex, dayIndex = index, title = activity
+                                id = activity.hashCode().toLong(),
+                                index = activityIndex,
+                                dayIndex = index,
+                                title = activity
                             )
                         )
                     }
@@ -42,16 +47,21 @@ class TravelDetailViewModel(val repository: TravelRepository) : ViewModel() {
 
         if (travelGuide == null && travelData.travelId != null) {
             val travelGuideWithDays = repository.loadTravelDetail(travelData.travelId)
-            travelGuideWithDays.days.forEachIndexed {  index, item ->
+            travelGuideWithDays.days.forEachIndexed { index, item ->
                 travelItems.add(
                     TravelType.Day(
-                        index = index, title = item.day.title.orEmpty()
+                        id = item.hashCode().toLong(),
+                        index = index,
+                        title = item.day.title.orEmpty()
                     )
                 )
                 item.activities.forEachIndexed { activityIndex, activity ->
                     travelItems.add(
                         TravelType.Activity(
-                            index = activityIndex, dayIndex = index, title = activity.title
+                            id = activity.hashCode().toLong(),
+                            index = activityIndex,
+                            dayIndex = index,
+                            title = activity.title
                         )
                     )
                 }

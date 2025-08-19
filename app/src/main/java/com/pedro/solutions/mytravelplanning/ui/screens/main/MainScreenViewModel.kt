@@ -40,7 +40,8 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
         _uiState.update {
             it.copy(
                 isOnSelectionMode = isOnSelectionMode,
-                selectedTravelIds = hashSetOf()
+                selectedTravelIds = hashSetOf(),
+                travels = it.travels.map { travel -> travel.copy(isSelected = false) }
             )
         }
     }
@@ -87,6 +88,10 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
 
     fun setDropdownMenuShowing(isShowing: Boolean) {
         _uiState.update { it.copy(isDropDownMenuShowing = isShowing) }
+    }
+
+    fun goBack() = viewModelScope.launch {
+        _uiEvent.emit(MainScreenUiEvent.GoBack)
     }
 
     fun openTravelDetail(travelId: Long) = viewModelScope.launch {

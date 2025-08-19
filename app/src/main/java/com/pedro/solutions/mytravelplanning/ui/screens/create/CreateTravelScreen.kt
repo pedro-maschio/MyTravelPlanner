@@ -148,7 +148,7 @@ fun CreateTravelScreen(
                     .padding(innerPadding)
                     .padding(horizontal = DimenTwo),
                 verticalArrangement = Arrangement.spacedBy(DimenOne),
-                state = listState
+                state = listState,
             ) {
                 item {
                     TravelTextField(
@@ -162,6 +162,7 @@ fun CreateTravelScreen(
 
                 itemsIndexed(
                     items = uiState.value.travels,
+                    key = { index, _ -> uiState.value.travels[index].id },
                     contentType = { index, _ -> uiState.value.travels[index] }) { index, item ->
                     Row(
                         modifier = Modifier.padding(vertical = DimenHalf),

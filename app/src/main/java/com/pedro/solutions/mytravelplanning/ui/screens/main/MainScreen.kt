@@ -1,12 +1,9 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.main
 
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,14 +12,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,16 +26,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.ui.components.EmptyState
 import com.pedro.solutions.mytravelplanning.ui.components.TravelAppBar
-import com.pedro.solutions.mytravelplanning.ui.theme.Typography
+import com.pedro.solutions.mytravelplanning.ui.components.TravelCard
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenFive
-import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
-import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 
@@ -51,6 +41,7 @@ fun MainScreen(
     viewModel: MainScreenViewModel = koinViewModel(),
     onClickTravelItem: (Long) -> Unit,
     onClickFloatingButton: () -> Unit,
+    onGoBack: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -58,10 +49,19 @@ fun MainScreen(
         viewModel.loadTravels()
     }
 
+    BackHandler {
+        if (uiState.value.isOnSelectionMode) {
+            viewModel.setOnSelectionMode(false)
+        } else {
+            viewModel.goBack()
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collectLatest {
             when (it) {
                 is MainScreenUiEvent.OpenCreateTravelScreen -> onClickTravelItem(it.travelId)
+                is MainScreenUiEvent.GoBack -> onGoBack()
             }
         }
     }
@@ -184,44 +184,4 @@ fun MainScreen(
             }
         }
     }
-}
-
-@Composable
-fun TravelCard(
-    travel: MainScreenTravel,
-    onLongClick: () -> Unit,
-    onClick: () -> Unit
-) {
-    OutlinedCard(
-        modifier = Modifier
-            .height(80.dp)
-            .fillMaxWidth()
-            .padding(all = DimenTwo)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        colors = CardDefaults.cardColors(containerColor = if (travel.isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.elevatedCardElevation()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = DimenOne),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = travel.travelName.ifBlank { stringResource(R.string.travels_listing_unnamed_travel) },
-                style = Typography.titleMedium
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun TravelCardPreview(modifier: Modifier = Modifier) {
-    TravelCard(
-        travel = MainScreenTravel(
-            travelName = "Viagem para a disney",
-            travelId = -1,
-            isSelected = false
-        ), onLongClick = { }) { }
 }

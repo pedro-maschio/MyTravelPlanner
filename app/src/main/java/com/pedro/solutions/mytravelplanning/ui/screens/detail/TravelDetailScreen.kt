@@ -140,7 +140,13 @@ fun TravelDetailScreen(
     ) {
         itemsIndexed(
             mutableTravelItems,
-            contentType = { index, _ -> TravelType.Day(index, "") }) { index, item ->
+            contentType = { index, _ ->
+                TravelType.Day(
+                    id = 0L,
+                    index = index,
+                    title = ""
+                )
+            }) { index, item ->
 
             val itemModifier = if (draggingItemIndex == index) {
                 Modifier

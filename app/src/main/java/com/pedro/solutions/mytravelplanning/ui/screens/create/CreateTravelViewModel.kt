@@ -64,11 +64,20 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         val newTravels = buildList {
             currentTravel.days.forEachIndexed { index, day ->
                 if (day != null) {
-                    add(TravelType.Day(index = index, title = day.title.orEmpty()))
+                    add(
+                        TravelType.Day(
+                            id = day.hashCode().toLong(),
+                            index = index,
+                            title = day.title.orEmpty()
+                        )
+                    )
                     day.activities.forEachIndexed { activityIndex, activity ->
                         add(
                             TravelType.Activity(
-                                index = activityIndex, dayIndex = index, title = activity
+                                id = activity.hashCode().toLong(),
+                                index = activityIndex,
+                                dayIndex = index,
+                                title = activity
                             )
                         )
                     }
@@ -209,11 +218,12 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     }
 
     fun moveActivity(fromIndex: Int, toIndex: Int) {
-        Log.d(
-            "PEDRO123",
-            "fromIndex=$fromIndex, toIndex=$toIndex uiState.value.travels.size=${uiState.value.travels.size}"
-        )
         val travels = uiState.value.travels.toMutableList()
+        if (fromIndex < 0 || toIndex < 0 || fromIndex >= travels.size || toIndex >= travels.size) {
+            // TODO: Log this, this should never happen!
+            return
+        }
+
         val activity = travels.removeAt(fromIndex)
         if (toIndex >= travels.size) {
             travels.add(activity)
@@ -229,10 +239,19 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         var lastDayIndex = 0
         val updatedTravels: List<TravelType> = travels.mapIndexed { index, travelType ->
             if (travelType is TravelType.Activity) {
-                TravelType.Activity(lastDayIndex - index - 1, lastDayIndex, travelType.title)
+                TravelType.Activity(
+                    id = travelType.hashCode().toLong(),
+                    index = lastDayIndex - index - 1,
+                    dayIndex = lastDayIndex,
+                    title = travelType.title
+                )
             } else {
                 lastDayIndex++
-                TravelType.Day((travelType as TravelType.Day).index, travelType.title)
+                TravelType.Day(
+                    id = travelType.hashCode().toLong(),
+                    index = (travelType as TravelType.Day).index,
+                    title = travelType.title
+                )
             }
         }
         Log.d("PEDRO123", "updatedTravels=$updatedTravels")
