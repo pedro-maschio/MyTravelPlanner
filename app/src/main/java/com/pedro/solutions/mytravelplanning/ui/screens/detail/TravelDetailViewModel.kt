@@ -24,7 +24,6 @@ class TravelDetailViewModel(val repository: TravelRepository) : ViewModel() {
                 Json.decodeFromString<TravelGuide>(travelGuide).days.forEachIndexed { index, item ->
                     travelItems.add(
                         TravelType.Day(
-                            id = item.hashCode().toLong(),
                             index = index,
                             title = item?.title.orEmpty()
                         )
@@ -32,7 +31,6 @@ class TravelDetailViewModel(val repository: TravelRepository) : ViewModel() {
                     item?.activities?.forEachIndexed { activityIndex, activity ->
                         travelItems.add(
                             TravelType.Activity(
-                                id = activity.hashCode().toLong(),
                                 index = activityIndex,
                                 dayIndex = index,
                                 title = activity
@@ -50,7 +48,6 @@ class TravelDetailViewModel(val repository: TravelRepository) : ViewModel() {
             travelGuideWithDays.days.forEachIndexed { index, item ->
                 travelItems.add(
                     TravelType.Day(
-                        id = item.hashCode().toLong(),
                         index = index,
                         title = item.day.title.orEmpty()
                     )
@@ -58,7 +55,6 @@ class TravelDetailViewModel(val repository: TravelRepository) : ViewModel() {
                 item.activities.forEachIndexed { activityIndex, activity ->
                     travelItems.add(
                         TravelType.Activity(
-                            id = activity.hashCode().toLong(),
                             index = activityIndex,
                             dayIndex = index,
                             title = activity.title

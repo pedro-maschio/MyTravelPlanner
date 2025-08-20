@@ -142,7 +142,6 @@ fun TravelDetailScreen(
             mutableTravelItems,
             contentType = { index, _ ->
                 TravelType.Day(
-                    id = 0L,
                     index = index,
                     title = ""
                 )

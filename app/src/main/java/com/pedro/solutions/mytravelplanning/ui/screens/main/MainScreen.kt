@@ -1,7 +1,9 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.main
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,10 +16,13 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,9 +37,11 @@ import com.pedro.solutions.mytravelplanning.ui.components.EmptyState
 import com.pedro.solutions.mytravelplanning.ui.components.TravelAppBar
 import com.pedro.solutions.mytravelplanning.ui.components.TravelCard
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenFive
+import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
@@ -143,7 +150,46 @@ fun MainScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = { TravelAppBar(title = topBarText, actions = { SelectionModeAction() }) },
+        topBar = {
+            if (uiState.value.isOnSelectionMode) {
+                TravelAppBar(title = topBarText, actions = { SelectionModeAction() })
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    SearchBar(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = DimenOne),
+                        inputField = {
+                            SearchBarDefaults.InputField(
+                                query = uiState.value.searchTerm,
+                                onQueryChange = { viewModel.updateQuery(it) },
+                                onSearch = {
+                                    viewModel.onSearch(it)
+                                },
+                                expanded = uiState.value.isSearchScreenExpanded,
+                                onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
+                                placeholder = { Text(text = stringResource(R.string.travels_listing_search_travel_placeholder)) }
+                            )
+                        },
+                        expanded = uiState.value.isSearchScreenExpanded,
+                        onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
+                    ) {
+                        LazyColumn {
+                            items(uiState.value.searchedTravels) { travel ->
+                                TravelCard(travel = travel, onLongClick = {
+                                    // User won`t be able to select during search!
+                                }, onClick = {
+                                    viewModel.openCreateTravelScreen(travel.travelId)
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick =
@@ -168,7 +214,7 @@ fun MainScreen(
                     if (uiState.value.isOnSelectionMode) {
                         viewModel.selectTravel(travel.travelId)
                     } else {
-                        viewModel.openTravelDetail(travel.travelId)
+                        viewModel.openCreateTravelScreen(travel.travelId)
                     }
                 })
             }

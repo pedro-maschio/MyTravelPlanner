@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListItemInfo
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -36,6 +35,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -137,6 +141,17 @@ fun CreateTravelScreen(
         })
     }
 
+    var delta: Float by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    var draggingItem: LazyListItemInfo? by remember {
+        mutableStateOf(null)
+    }
+
+    var draggingItemIndex: Int? by remember {
+        mutableStateOf(null)
+    }
 
     CreateTravelScaffold { innerPadding ->
         if (uiState.value.isLoading) {
@@ -162,7 +177,6 @@ fun CreateTravelScreen(
 
                 itemsIndexed(
                     items = uiState.value.travels,
-                    key = { index, _ -> uiState.value.travels[index].id },
                     contentType = { index, _ -> uiState.value.travels[index] }) { index, item ->
                     Row(
                         modifier = Modifier.padding(vertical = DimenHalf),
@@ -205,11 +219,11 @@ fun CreateTravelScreen(
                             }
 
                             is TravelType.Activity -> {
-                                val modifier = if (uiState.value.draggingIndex == index) {
+                                val modifier = if (draggingItemIndex == index) {
                                     Modifier
                                         .zIndex(1f)
                                         .graphicsLayer {
-                                            translationY = uiState.value.draggingAmount
+                                            translationY = delta
                                         }
                                 } else {
                                     Modifier
@@ -228,11 +242,82 @@ fun CreateTravelScreen(
                                         )
                                     })
                                 if (uiState.value.isEditing) {
-                                    DraggableIcon(
-                                        viewModel = viewModel,
-                                        listState = listState,
-                                        index = index,
-                                        scrollChannel = scrollChannel
+                                    Icon(
+                                        modifier = modifier
+                                            .padding(horizontal = DimenOne)
+                                            .pointerInput(Unit) {
+                                                detectDragGesturesAfterLongPress(onDragStart = { offset ->
+                                                    val draggingItemInfo: LazyListItemInfo? =
+                                                        listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+                                                    draggingItem = draggingItemInfo
+                                                    draggingItemIndex = index
+                                                }, onDragEnd = {
+                                                    delta = 0f
+                                                    draggingItem = null
+                                                    draggingItemIndex = null
+                                                }, onDragCancel = {
+                                                    delta = 0f
+                                                    draggingItem = null
+                                                    draggingItemIndex = null
+                                                }, onDrag = { change, dragAmount ->
+                                                    change.consume()
+                                                    delta += dragAmount.y
+                                                    val currentDragItem =
+                                                        draggingItem
+                                                            ?: return@detectDragGesturesAfterLongPress
+                                                    val currentDragIndex =
+                                                        draggingItemIndex
+                                                            ?: return@detectDragGesturesAfterLongPress
+
+                                                    val startOffset =
+                                                        currentDragItem.offset + delta
+                                                    val endOffset =
+                                                        currentDragItem.offset + currentDragItem.size + delta
+                                                    val middleOffset =
+                                                        startOffset + (endOffset - startOffset) / 2
+
+                                                    val targetItem =
+                                                        listState.layoutInfo.visibleItemsInfo.find { item ->
+                                                            middleOffset.toInt() in item.offset..item.offset + item.size && currentDragItem.index != item.index
+                                                        }
+                                                    // Index check so Activities can´t be moved above days. For some reason targetItem.contentType is incorrect
+                                                    if (targetItem != null && targetItem.index != 0) { //  && uiState.value.travels[targetItem.index] !is TravelType.Day
+                                                        viewModel.moveActivity(
+                                                            currentDragIndex, targetItem.index
+                                                        )
+                                                        draggingItemIndex = targetItem.index
+                                                        draggingItem = targetItem
+                                                        delta += currentDragItem.offset.toFloat() - targetItem.offset
+
+                                                    } else {
+                                                        val startOffsetToTop =
+                                                            startOffset - listState.layoutInfo.viewportStartOffset
+                                                        val endOffsetToBottom =
+                                                            endOffset - listState.layoutInfo.viewportEndOffset
+                                                        val scroll = when {
+                                                            startOffsetToTop < 0 -> startOffsetToTop.coerceAtMost(
+                                                                0f
+                                                            )
+
+                                                            endOffsetToBottom > 0 -> endOffsetToBottom.coerceAtLeast(
+                                                                0f
+                                                            )
+
+                                                            else -> 0f
+                                                        }
+                                                        val canScrollDown =
+                                                            draggingItemIndex != uiState.value.travels.size - 1 && endOffsetToBottom > 0
+                                                        val canScrollUp =
+                                                            draggingItemIndex != 0 && startOffsetToTop < 0
+                                                        if (scroll != 0f && (canScrollUp || canScrollDown)) {
+                                                            scrollChannel.trySend(scroll)
+                                                        }
+                                                    }
+
+                                                })
+                                            },
+                                        imageVector = Icons.Default.DragIndicator,
+                                        contentDescription = null
                                     )
                                 }
                             }
@@ -257,87 +342,6 @@ fun CreateTravelScreen(
             }
         }
     }
-}
-
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun DraggableIcon(
-    modifier: Modifier = Modifier,
-    viewModel: CreateTravelViewModel,
-    listState: LazyListState,
-    index: Int,
-    scrollChannel: Channel<Float>
-) {
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-    Icon(
-        modifier = modifier
-            .padding(horizontal = DimenOne)
-            .pointerInput(listState) {
-                detectDragGesturesAfterLongPress(onDragStart = { offset ->
-                    val draggingItemInfo: LazyListItemInfo? =
-                        listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
-                    viewModel.updateDraggingItem(
-                        draggingItemInfo
-                    )
-                    viewModel.updateDraggableItemIndex(index)
-                }, onDragEnd = {
-                    viewModel.resetDragging()
-                }, onDragCancel = {
-                    viewModel.resetDragging()
-                }, onDrag = { change, dragAmount ->
-                    change.consume()
-                    viewModel.updateDragAmountY(dragAmount.y)
-                    val currentDragItem =
-                        uiState.value.draggingItem ?: return@detectDragGesturesAfterLongPress
-                    val currentDragIndex =
-                        uiState.value.draggingIndex ?: return@detectDragGesturesAfterLongPress
-
-                    val startOffset = currentDragItem.offset + uiState.value.draggingAmount
-                    val endOffset =
-                        currentDragItem.offset + currentDragItem.size + uiState.value.draggingAmount
-                    val middleOffset = startOffset + (endOffset - startOffset) / 2
-
-                    val targetItem = listState.layoutInfo.visibleItemsInfo.find { item ->
-                        middleOffset.toInt() in item.offset..item.offset + item.size && currentDragItem.index != item.index
-                    }
-                    // Index check so Activities can´t be moved above days. For some reason targetItem.contentType is incorrect
-                    if (targetItem != null && targetItem.index != 0) { //  && uiState.value.travels[targetItem.index] !is TravelType.Day
-                        viewModel.moveActivity(
-                            currentDragIndex, targetItem.index
-                        )
-                        viewModel.updateDraggableItemIndex(
-                            targetItem.index
-                        )
-                        viewModel.updateDraggingItem(targetItem)
-                        viewModel.updateDragAmountY(uiState.value.draggingItem!!.offset.toFloat() - targetItem.offset)
-
-                    } else {
-                        val startOffsetToTop =
-                            startOffset - listState.layoutInfo.viewportStartOffset
-                        val endOffsetToBottom = endOffset - listState.layoutInfo.viewportEndOffset
-                        val scroll = when {
-                            startOffsetToTop < 0 -> startOffsetToTop.coerceAtMost(
-                                0f
-                            )
-
-                            endOffsetToBottom > 0 -> endOffsetToBottom.coerceAtLeast(
-                                0f
-                            )
-
-                            else -> 0f
-                        }
-                        val canScrollDown =
-                            uiState.value.draggingIndex != uiState.value.travels.size - 1 && endOffsetToBottom > 0
-                        val canScrollUp = uiState.value.draggingIndex != 0 && startOffsetToTop < 0
-                        if (scroll != 0f && (canScrollUp || canScrollDown)) {
-                            scrollChannel.trySend(scroll)
-                        }
-                    }
-
-                })
-            }, imageVector = Icons.Default.DragIndicator, contentDescription = null
-    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

@@ -26,6 +26,7 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
                         isSelected = false
                     )
                 })
+        getSearchedTravels()
         hideLoading()
         updateEmptyState()
     }
@@ -90,11 +91,44 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
         _uiState.update { it.copy(isDropDownMenuShowing = isShowing) }
     }
 
-    fun goBack() = viewModelScope.launch {
+    fun setSearchScreenExpanded(isExpanded: Boolean) {
+        if (!isExpanded) {
+            _uiState.update { it.copy(searchTerm = "", searchedTravels = emptyList()) }
+        }
+        _uiState.update { it.copy(isSearchScreenExpanded = isExpanded) }
+    }
+
+    private fun getSearchedTravels() {
+        val searchedTravels = uiState.value.travels.filter {
+            it.travelName.lowercase()
+                .contains(other = uiState.value.searchTerm, ignoreCase = true)
+        }
+
+        _uiState.update { it.copy(searchedTravels = searchedTravels) }
+    }
+
+    fun updateQuery(query: String) {
+        _uiState.update { it.copy(searchTerm = query) }
+        getSearchedTravels()
+    }
+
+    fun onSearch(query: String) {
+        getSearchedTravels()
+    }
+
+    fun goBack() {
+        emitGoBack()
+    }
+
+    fun openCreateTravelScreen(travelId: Long) {
+        emitOpenCreateTravelScreen(travelId)
+    }
+
+    private fun emitGoBack() = viewModelScope.launch {
         _uiEvent.emit(MainScreenUiEvent.GoBack)
     }
 
-    fun openTravelDetail(travelId: Long) = viewModelScope.launch {
+    private fun emitOpenCreateTravelScreen(travelId: Long) = viewModelScope.launch {
         _uiEvent.emit(MainScreenUiEvent.OpenCreateTravelScreen(travelId))
     }
 }

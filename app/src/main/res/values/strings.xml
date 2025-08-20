@@ -3,6 +3,7 @@
     <string name="empty_message">Não há viagens cadastradas ainda. Comece agora mesmo cadastrando o seu próximo destino!</string>
 
     <string name="travels_listing_title">Suas próximas viagens</string>
+    <string name="travels_listing_search_travel_placeholder">Buscar roteiros</string>
     <string name="travels_listing_unnamed_travel">(viagem não nomeada)</string>
     <string name="travels_listing_delete_dropdown_title">Excluir itens selecionados</string>
     <string name="travels_listing_delete_dialog_title">Deseja excluir os roteiros?</string>

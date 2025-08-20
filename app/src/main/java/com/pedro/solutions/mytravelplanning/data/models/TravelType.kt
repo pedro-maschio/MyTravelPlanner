@@ -1,7 +1,7 @@
 package com.pedro.solutions.mytravelplanning.data.models
 
-sealed class TravelType(val id: Long, val index: Int) {
-    class Day(id: Long, index: Int, val title: String) : TravelType(id, index)
-    class Activity(id: Long, index: Int, val dayIndex: Int, val title: String) :
-        TravelType(id, index)
+sealed class TravelType(val index: Int) {
+    class Day(index: Int, val title: String) : TravelType(index)
+    class Activity(index: Int, val dayIndex: Int, val title: String) :
+        TravelType(index)
 }

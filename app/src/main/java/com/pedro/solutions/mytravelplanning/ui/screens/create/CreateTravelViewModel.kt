@@ -1,9 +1,7 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.create
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
@@ -66,7 +64,6 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
                 if (day != null) {
                     add(
                         TravelType.Day(
-                            id = day.hashCode().toLong(),
                             index = index,
                             title = day.title.orEmpty()
                         )
@@ -74,7 +71,6 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
                     day.activities.forEachIndexed { activityIndex, activity ->
                         add(
                             TravelType.Activity(
-                                id = activity.hashCode().toLong(),
                                 index = activityIndex,
                                 dayIndex = index,
                                 title = activity
@@ -185,7 +181,7 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         if (internalTravelId != null) { // User is editing an existing trip
             repository.updateTravelGuide(
                 travelId = internalTravelId!!,
-                _uiState.value.travel.copy(updatedAt = System.currentTimeMillis())
+                travelGuide = _uiState.value.travel.copy(updatedAt = System.currentTimeMillis())
             )
         } else {
             repository.insertTravelGuide(
@@ -240,7 +236,6 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         val updatedTravels: List<TravelType> = travels.mapIndexed { index, travelType ->
             if (travelType is TravelType.Activity) {
                 TravelType.Activity(
-                    id = travelType.hashCode().toLong(),
                     index = lastDayIndex - index - 1,
                     dayIndex = lastDayIndex,
                     title = travelType.title
@@ -248,31 +243,12 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
             } else {
                 lastDayIndex++
                 TravelType.Day(
-                    id = travelType.hashCode().toLong(),
                     index = (travelType as TravelType.Day).index,
                     title = travelType.title
                 )
             }
         }
-        Log.d("PEDRO123", "updatedTravels=$updatedTravels")
         _uiState.update { it.copy(travels = updatedTravels.toList()) }
-    }
-
-    fun updateDraggableItemIndex(index: Int) {
-        _uiState.update { it.copy(draggingIndex = index) }
-    }
-
-    fun resetDragging() {
-        Log.d("PEDRO123", "resetDragging called")
-        _uiState.update { it.copy(draggingAmount = 0f, draggingIndex = null, draggingItem = null) }
-    }
-
-    fun updateDragAmountY(y: Float) {
-        _uiState.update { it.copy(draggingAmount = _uiState.value.draggingAmount + y) }
-    }
-
-    fun updateDraggingItem(info: LazyListItemInfo?) {
-        _uiState.update { it.copy(draggingItem = info) }
     }
 
     fun deleteDay(index: Int) {
