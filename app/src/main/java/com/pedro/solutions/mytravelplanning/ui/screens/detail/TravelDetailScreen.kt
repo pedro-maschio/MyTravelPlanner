@@ -139,13 +139,8 @@ fun TravelDetailScreen(
             }, state = listState
     ) {
         itemsIndexed(
-            mutableTravelItems,
-            contentType = { index, _ ->
-                TravelType.Day(
-                    index = index,
-                    title = ""
-                )
-            }) { index, item ->
+            mutableTravelItems
+        ) { index, item ->
 
             val itemModifier = if (draggingItemIndex == index) {
                 Modifier

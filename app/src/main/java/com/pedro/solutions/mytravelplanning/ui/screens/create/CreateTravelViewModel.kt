@@ -213,21 +213,7 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         }
     }
 
-    fun moveActivity(fromIndex: Int, toIndex: Int) {
-        val travels = uiState.value.travels.toMutableList()
-        if (fromIndex < 0 || toIndex < 0 || fromIndex >= travels.size || toIndex >= travels.size) {
-            // TODO: Log this, this should never happen!
-            return
-        }
 
-        val activity = travels.removeAt(fromIndex)
-        if (toIndex >= travels.size) {
-            travels.add(activity)
-        } else {
-            travels.add(toIndex, activity)
-        }
-        _uiState.update { it.copy(travels = travels) }
-    }
 
     private fun updateDaysIndexes() {
         val travels = uiState.value.travels.toMutableList()

@@ -4,8 +4,6 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,9 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -35,19 +31,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
@@ -59,7 +47,6 @@ import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenHalf
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenSix
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 
@@ -74,17 +61,7 @@ fun CreateTravelScreen(
     onTravelDeleted: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
-
-    val scrollChannel = Channel<Float>()
-
-    LaunchedEffect(listState) {
-        while (true) {
-            val diff = scrollChannel.receive()
-            listState.scrollBy(diff)
-        }
-    }
 
     BackHandler {
         // TODO: fix the focus from the keyboard, when the user clicks back
@@ -141,17 +118,71 @@ fun CreateTravelScreen(
         })
     }
 
-    var delta: Float by remember {
-        mutableFloatStateOf(0f)
+    @Composable
+    fun TravelDay(modifier: Modifier = Modifier, item: TravelType.Day) {
+        TravelTextField(
+            modifier = modifier,
+            value = item.title,
+            onValueChange = {
+                viewModel.updateTravelDayText(
+                    index = item.index, newText = it
+                )
+            },
+            enabled = uiState.value.isEditing.not()
+        )
+        if (uiState.value.isEditing) {
+            Icon(
+                modifier = Modifier
+                    .padding(horizontal = DimenOne)
+                    .clickable {
+                        viewModel.deleteDay(item.index)
+                    },
+                imageVector = Icons.Default.Delete,
+                contentDescription = null
+            )
+        } else {
+            Icon(
+                modifier = Modifier
+                    .padding(horizontal = DimenOne)
+                    .clickable {
+                        viewModel.addActivity(item.index)
+                        focusManager.clearFocus()
+                    },
+                imageVector = Icons.Default.Add,
+                contentDescription = null
+            )
+        }
     }
 
-    var draggingItem: LazyListItemInfo? by remember {
-        mutableStateOf(null)
+    @Composable
+    fun DraggableTravelActivity(
+        modifier: Modifier = Modifier,
+        item: TravelType.Activity,
+        index: Int
+    ) {
+        TravelTextField(
+            modifier = modifier
+                .padding(end = DimenOne),
+            value = item.title,
+            enabled = uiState.value.isEditing.not(),
+            onValueChange = {
+                viewModel.updateTravelActivityText(
+                    dayIndex = item.dayIndex,
+                    activityIndex = item.index,
+                    newText = it
+                )
+            })
+        if (uiState.value.isEditing) {
+            Icon(
+                modifier = Modifier
+                    .padding(horizontal = DimenOne),
+                imageVector = Icons.Default.DragIndicator,
+                contentDescription = null
+            )
+        }
     }
 
-    var draggingItemIndex: Int? by remember {
-        mutableStateOf(null)
-    }
+
 
     CreateTravelScaffold { innerPadding ->
         if (uiState.value.isLoading) {
@@ -163,7 +194,6 @@ fun CreateTravelScreen(
                     .padding(innerPadding)
                     .padding(horizontal = DimenTwo),
                 verticalArrangement = Arrangement.spacedBy(DimenOne),
-                state = listState,
             ) {
                 item {
                     TravelTextField(
@@ -176,151 +206,23 @@ fun CreateTravelScreen(
                 }
 
                 itemsIndexed(
-                    items = uiState.value.travels,
-                    contentType = { index, _ -> uiState.value.travels[index] }) { index, item ->
+                    items = uiState.value.travels
+                ) { index, item ->
                     Row(
                         modifier = Modifier.padding(vertical = DimenHalf),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         when (item) {
-                            is TravelType.Day -> {
-                                TravelTextField(
-                                    modifier = Modifier.weight(1f),
-                                    value = item.title,
-                                    onValueChange = {
-                                        viewModel.updateTravelDayText(
-                                            index = item.index, newText = it
-                                        )
-                                    },
-                                    enabled = uiState.value.isEditing.not()
-                                )
-                                if (uiState.value.isEditing) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(horizontal = DimenOne)
-                                            .clickable {
-                                                viewModel.deleteDay(item.index)
-                                            },
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = null
-                                    )
-                                } else {
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(horizontal = DimenOne)
-                                            .clickable {
-                                                viewModel.addActivity(item.index)
-                                                focusManager.clearFocus()
-                                            },
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
+                            is TravelType.Day -> TravelDay(
+                                modifier = Modifier.weight(1f),
+                                item = item
+                            )
 
-                            is TravelType.Activity -> {
-                                val modifier = if (draggingItemIndex == index) {
-                                    Modifier
-                                        .zIndex(1f)
-                                        .graphicsLayer {
-                                            translationY = delta
-                                        }
-                                } else {
-                                    Modifier
-                                }
-                                TravelTextField(
-                                    modifier = modifier
-                                        .weight(1f)
-                                        .padding(end = DimenOne),
-                                    value = item.title,
-                                    enabled = uiState.value.isEditing.not(),
-                                    onValueChange = {
-                                        viewModel.updateTravelActivityText(
-                                            dayIndex = item.dayIndex,
-                                            activityIndex = item.index,
-                                            newText = it
-                                        )
-                                    })
-                                if (uiState.value.isEditing) {
-                                    Icon(
-                                        modifier = modifier
-                                            .padding(horizontal = DimenOne)
-                                            .pointerInput(Unit) {
-                                                detectDragGesturesAfterLongPress(onDragStart = { offset ->
-                                                    val draggingItemInfo: LazyListItemInfo? =
-                                                        listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
-                                                    draggingItem = draggingItemInfo
-                                                    draggingItemIndex = index
-                                                }, onDragEnd = {
-                                                    delta = 0f
-                                                    draggingItem = null
-                                                    draggingItemIndex = null
-                                                }, onDragCancel = {
-                                                    delta = 0f
-                                                    draggingItem = null
-                                                    draggingItemIndex = null
-                                                }, onDrag = { change, dragAmount ->
-                                                    change.consume()
-                                                    delta += dragAmount.y
-                                                    val currentDragItem =
-                                                        draggingItem
-                                                            ?: return@detectDragGesturesAfterLongPress
-                                                    val currentDragIndex =
-                                                        draggingItemIndex
-                                                            ?: return@detectDragGesturesAfterLongPress
-
-                                                    val startOffset =
-                                                        currentDragItem.offset + delta
-                                                    val endOffset =
-                                                        currentDragItem.offset + currentDragItem.size + delta
-                                                    val middleOffset =
-                                                        startOffset + (endOffset - startOffset) / 2
-
-                                                    val targetItem =
-                                                        listState.layoutInfo.visibleItemsInfo.find { item ->
-                                                            middleOffset.toInt() in item.offset..item.offset + item.size && currentDragItem.index != item.index
-                                                        }
-                                                    // Index check so Activities can´t be moved above days. For some reason targetItem.contentType is incorrect
-                                                    if (targetItem != null && targetItem.index != 0) { //  && uiState.value.travels[targetItem.index] !is TravelType.Day
-                                                        viewModel.moveActivity(
-                                                            currentDragIndex, targetItem.index
-                                                        )
-                                                        draggingItemIndex = targetItem.index
-                                                        draggingItem = targetItem
-                                                        delta += currentDragItem.offset.toFloat() - targetItem.offset
-
-                                                    } else {
-                                                        val startOffsetToTop =
-                                                            startOffset - listState.layoutInfo.viewportStartOffset
-                                                        val endOffsetToBottom =
-                                                            endOffset - listState.layoutInfo.viewportEndOffset
-                                                        val scroll = when {
-                                                            startOffsetToTop < 0 -> startOffsetToTop.coerceAtMost(
-                                                                0f
-                                                            )
-
-                                                            endOffsetToBottom > 0 -> endOffsetToBottom.coerceAtLeast(
-                                                                0f
-                                                            )
-
-                                                            else -> 0f
-                                                        }
-                                                        val canScrollDown =
-                                                            draggingItemIndex != uiState.value.travels.size - 1 && endOffsetToBottom > 0
-                                                        val canScrollUp =
-                                                            draggingItemIndex != 0 && startOffsetToTop < 0
-                                                        if (scroll != 0f && (canScrollUp || canScrollDown)) {
-                                                            scrollChannel.trySend(scroll)
-                                                        }
-                                                    }
-
-                                                })
-                                            },
-                                        imageVector = Icons.Default.DragIndicator,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
+                            is TravelType.Activity -> DraggableTravelActivity(
+                                modifier = Modifier.weight(1f),
+                                item = item,
+                                index = item.index
+                            )
                         }
                     }
                 }

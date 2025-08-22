@@ -26,7 +26,7 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
                         isSelected = false
                     )
                 })
-        getSearchedTravels()
+        updateSearchedTravels()
         hideLoading()
         updateEmptyState()
     }
@@ -67,9 +67,10 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
     }
 
     fun onDeleteTravelsClick() {
+        val idsToDelete = uiState.value.selectedTravelIds.toList()
         setDropdownMenuShowing(false)
         viewModelScope.launch {
-            _uiState.value.selectedTravelIds.forEach {
+            idsToDelete.forEach {
                 repository.deleteTravel(it)
             }
             loadTravels()
@@ -98,22 +99,25 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
         _uiState.update { it.copy(isSearchScreenExpanded = isExpanded) }
     }
 
-    private fun getSearchedTravels() {
+    private fun updateSearchedTravels() {
+        if (uiState.value.searchTerm.isBlank()) {
+            _uiState.update { it.copy(searchedTravels = emptyList()) }
+            return
+        }
         val searchedTravels = uiState.value.travels.filter {
             it.travelName.lowercase()
                 .contains(other = uiState.value.searchTerm, ignoreCase = true)
         }
-
         _uiState.update { it.copy(searchedTravels = searchedTravels) }
+    }
+
+    fun clearSearchQuery() {
+        updateQuery("")
     }
 
     fun updateQuery(query: String) {
         _uiState.update { it.copy(searchTerm = query) }
-        getSearchedTravels()
-    }
-
-    fun onSearch(query: String) {
-        getSearchedTravels()
+        updateSearchedTravels()
     }
 
     fun goBack() {

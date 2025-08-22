@@ -11,8 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -152,7 +154,10 @@ fun MainScreen(
         modifier = modifier,
         topBar = {
             if (uiState.value.isOnSelectionMode) {
-                TravelAppBar(title = topBarText, actions = { SelectionModeAction() })
+                TravelAppBar(
+                    modifier = Modifier.padding(vertical = DimenOne),
+                    title = topBarText,
+                    actions = { SelectionModeAction() })
             } else {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -161,17 +166,33 @@ fun MainScreen(
                     SearchBar(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = DimenOne),
+                            .padding(horizontal = DimenOne, vertical = DimenOne),
                         inputField = {
                             SearchBarDefaults.InputField(
                                 query = uiState.value.searchTerm,
                                 onQueryChange = { viewModel.updateQuery(it) },
                                 onSearch = {
-                                    viewModel.onSearch(it)
+                                    viewModel.updateQuery(it)
                                 },
                                 expanded = uiState.value.isSearchScreenExpanded,
                                 onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
-                                placeholder = { Text(text = stringResource(R.string.travels_listing_search_travel_placeholder)) }
+                                placeholder = { Text(text = stringResource(R.string.travels_listing_search_travel_placeholder)) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = null
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (uiState.value.searchTerm.isNotEmpty()) {
+                                        IconButton(onClick = { viewModel.clearSearchQuery() }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Clear,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+                                }
                             )
                         },
                         expanded = uiState.value.isSearchScreenExpanded,
