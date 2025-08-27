@@ -12,7 +12,6 @@ import com.pedro.solutions.mytravelplanning.data.models.ChatResponse
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.network.ChatGptApi
 import com.pedro.solutions.mytravelplanning.ui.screens.intro.SelectedOption
-
 class TravelRepository(
     private val context: Context,
     private val api: ChatGptApi,
@@ -54,6 +53,18 @@ class TravelRepository(
 
     suspend fun deleteTravel(travelId: Long) {
         dao.deleteTravelGuideEntity(travelId)
+    }
+
+    suspend fun addTravelDate(
+        travelId: Long,
+        formattedStartDate: String,
+        formattedEndDate: String
+    ) {
+        dao.addTravelDate(
+            travelId,
+            formattedStartDate,
+            formattedEndDate
+        )
     }
 
     companion object {

@@ -13,11 +13,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateTravelUiState())
-    private val _uiEvent = MutableSharedFlow<CreateTravelUiEvent>()
+
+    // We are setting the replay as sometimes addDay/onDayAdded does not work
+    private val _uiEvent = MutableSharedFlow<CreateTravelUiEvent>(replay = 1)
 
     val uiState = _uiState.asStateFlow()
     val uiEvent = _uiEvent
@@ -39,10 +44,23 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
                     title = dayWithActivities.day.title,
                     activities = dayWithActivities.activities.map { it.title })
             },
+            formattedStartDate = travelGuideWithDays.travelGuide.formattedStartDate,
+            formattedEndDate = travelGuideWithDays.travelGuide.formattedEndDate,
             createdAt = travelGuideWithDays.travelGuide.createdAt,
             updatedAt = travelGuideWithDays.travelGuide.updatedAt
         )
-        _uiState.update { it.copy(travel = travelGuide) }
+        _uiState.update {
+            it.copy(
+                formattedCreatedAt = getTravelDateFormatted(
+                    dateInMillis = travelGuideWithDays.travelGuide.createdAt, includeTime = true
+                ),
+                formattedUpdatedAt = getTravelDateFormatted(
+                    dateInMillis = travelGuideWithDays.travelGuide.updatedAt, includeTime = true
+                ),
+                travel = travelGuide,
+                hasTravelDates = travelGuideWithDays.travelGuide.formattedStartDate.isNotEmpty() && travelGuideWithDays.travelGuide.formattedEndDate.isNotEmpty()
+            )
+        }
         buildTravelState()
         hideLoading()
     }
@@ -64,16 +82,13 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
                 if (day != null) {
                     add(
                         TravelType.Day(
-                            index = index,
-                            title = day.title.orEmpty()
+                            index = index, title = day.title.orEmpty()
                         )
                     )
                     day.activities.forEachIndexed { activityIndex, activity ->
                         add(
                             TravelType.Activity(
-                                index = activityIndex,
-                                dayIndex = index,
-                                title = activity
+                                index = activityIndex, dayIndex = index, title = activity
                             )
                         )
                     }
@@ -83,8 +98,7 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
 
         _uiState.update {
             it.copy(
-                travelName = _uiState.value.travel.travelName,
-                travels = newTravels
+                travelName = _uiState.value.travel.travelName, travels = newTravels
             )
         }
     }
@@ -92,39 +106,26 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     fun updateTravelName(travelName: String) {
         _uiState.update {
             it.copy(
-                travelName = travelName,
-                travel = it.travel.copy(travelName = travelName)
+                travelName = travelName, travel = it.travel.copy(travelName = travelName)
             )
         }
-    }
-
-
-    fun addDefaultDay() {
-        _uiState.update {
-            it.copy(
-                travel = it.travel.copy(
-                    days = listOf(
-                        Day(
-                            title = "Day 1", activities = emptyList()
-                        )
-                    )
-                )
-            )
-        }
-        buildTravelState()
     }
 
     fun setEditingState(isEditing: Boolean) {
         _uiState.update { it.copy(isEditing = isEditing) }
     }
 
-    fun addDay() {
+    fun addDay() = viewModelScope.launch {
+        _uiEvent.emit(CreateTravelUiEvent.OnDayAdded)
+    }
+
+    fun onDayAdded(dayTitle: String) {
         _uiState.update {
             it.copy(
                 travel = it.travel.copy(
                     days = _uiState.value.travel.days.plus(
                         Day(
-                            title = "Day ${_uiState.value.travel.days.size + 1}",
+                            title = "$dayTitle ${_uiState.value.travel.days.size + 1}",
                             activities = emptyList()
                         )
                     )
@@ -177,6 +178,66 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         _uiState.update { it.copy(isDropDownMenuShowing = isShowing) }
     }
 
+    fun showDetailsAlertDialog() {
+        _uiState.update { it.copy(isDetailsAlertDialogShowing = true) }
+    }
+
+    fun hideDetailsAlertDialog() {
+        _uiState.update { it.copy(isDetailsAlertDialogShowing = false) }
+    }
+
+    fun showDatePickerModal() {
+        _uiState.update { it.copy(isDatePickerShowing = true) }
+    }
+
+    fun hideDatePickerModal() {
+        _uiState.update { it.copy(isDatePickerShowing = false) }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun getTravelDateFormatted(
+        dateInMillis: Long,
+        includeTime: Boolean = false,
+        fixTimeZone: Boolean = false
+    ): String {
+        val datePattern = if (includeTime) "dd/MM/yyyy HH:mm:ss" else "dd/MM/yyyy"
+        val startInstant = Instant.ofEpochMilli(dateInMillis)
+        val localStartDate = if (fixTimeZone) startInstant.atZone(ZoneOffset.UTC)
+            .toLocalDateTime() else startInstant.atZone(ZoneOffset.systemDefault())
+            .toLocalDateTime()
+        val formatter = DateTimeFormatter.ofPattern(datePattern) //  HH:mm:ss
+
+        val formattedStartDate = localStartDate.format(formatter)
+        return formattedStartDate
+    }
+
+    fun onDateRangeSelected(dateRange: Pair<Long?, Long?>) {
+        if (dateRange.first == null || dateRange.second == null) return
+
+        val formattedStartDate =
+            getTravelDateFormatted(dateInMillis = dateRange.first!!, fixTimeZone = true)
+        val formattedEndDate =
+            getTravelDateFormatted(dateInMillis = dateRange.second!!, fixTimeZone = true)
+        internalTravelId?.let {
+            // If the internalTravelId is null, it means we are dealing with a new travel (that will be
+            // later created with the correct formattedStartDate/formattedEndDate from the uiState
+            viewModelScope.launch {
+                repository.addTravelDate(
+                    travelId = it,
+                    formattedStartDate = formattedStartDate,
+                    formattedEndDate = formattedEndDate
+                )
+            }
+        }
+        _uiState.update {
+            it.copy(
+                hasTravelDates = true, travel = it.travel.copy(
+                    formattedStartDate = formattedStartDate, formattedEndDate = formattedEndDate
+                )
+            )
+        }
+    }
+
     fun createTravel() = viewModelScope.launch {
         if (internalTravelId != null) { // User is editing an existing trip
             repository.updateTravelGuide(
@@ -214,7 +275,6 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     }
 
 
-
     private fun updateDaysIndexes() {
         val travels = uiState.value.travels.toMutableList()
 
@@ -229,8 +289,7 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
             } else {
                 lastDayIndex++
                 TravelType.Day(
-                    index = (travelType as TravelType.Day).index,
-                    title = travelType.title
+                    index = (travelType as TravelType.Day).index, title = travelType.title
                 )
             }
         }

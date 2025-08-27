@@ -149,9 +149,11 @@ class MainScreenViewModelTest {
             TravelGuideWithDays(
                 travelGuide = TravelGuideEntity(
                     id = 0L,
-                    "example",
-                    0L,
-                    0L
+                    travelName = "example",
+                    formattedStartDate = "26/08/2025",
+                    formattedEndDate = "29/08/2025",
+                    createdAt = 0L,
+                    updatedAt = 0L
                 ), days = emptyList()
             )
         )

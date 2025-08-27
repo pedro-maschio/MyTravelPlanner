@@ -10,8 +10,13 @@ data class CreateTravelUiState(
     val travels: List<TravelType> = emptyList(),
     val travel: TravelGuide = TravelGuide(),
     val travelName: String = "",
+    val isDetailsAlertDialogShowing: Boolean = false,
+    val hasTravelDates: Boolean = false,
+    val isDatePickerShowing: Boolean = false,
     val isDeleteDialogShowing: Boolean = false,
     val isDropDownMenuShowing: Boolean = false,
     val isLoading: Boolean = false,
     val isEditing: Boolean = false,
+    val formattedCreatedAt: String = "",
+    val formattedUpdatedAt: String = ""
 )

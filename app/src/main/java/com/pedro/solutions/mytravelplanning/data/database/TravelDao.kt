@@ -45,6 +45,13 @@ interface TravelDao {
     @Insert
     suspend fun insertTravelGuide(travelGuide: TravelGuideEntity): Long
 
+    @Query("UPDATE TravelGuideEntity SET formattedStartDate = :formattedStartDate, formattedEndDate = :formattedEndDate WHERE id = :travelId")
+    suspend fun addTravelDate(
+        travelId: Long,
+        formattedStartDate: String,
+        formattedEndDate: String
+    )
+
     @Update
     suspend fun updateTravelGuideEntity(travelGuide: TravelGuideEntity)
 
@@ -77,8 +84,10 @@ suspend fun TravelDao.updateTravelGuide(
 ) {
     updateTravelGuideEntity(
         TravelGuideEntity(
-            travelName = travelGuide.travelName,
             id = travelGuideId,
+            travelName = travelGuide.travelName,
+            formattedStartDate = travelGuide.formattedStartDate,
+            formattedEndDate = travelGuide.formattedEndDate,
             createdAt = travelGuide.createdAt,
             updatedAt = travelGuide.updatedAt
         )
@@ -104,6 +113,8 @@ suspend fun TravelDao.insertTravelGuide(travelGuide: TravelGuide) {
     val travelGuideId = insertTravelGuide(
         TravelGuideEntity(
             travelName = travelGuide.travelName,
+            formattedStartDate = travelGuide.formattedStartDate,
+            formattedEndDate = travelGuide.formattedEndDate,
             createdAt = travelGuide.createdAt,
             updatedAt = travelGuide.updatedAt
         )

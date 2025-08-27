@@ -50,11 +50,23 @@
 
     <string name="create_travel_title">Crie seu roteiro de viagem</string>
     <string name="create_travel_add_new_day">Adicionar novo dia de viagem</string>
+    <string name="create_travel_day_placeholder">Dia</string>
     <string name="create_travel_edit">Editar</string>
     <string name="create_travel_save">Salvar</string>
+    <string name="create_travel_start_date">Data de partida</string>
+    <string name="create_travel_end_date">Data de chegada</string>
     <string name="create_travel_add_date">Adicionar data</string>
+    <string name="create_travel_edit_date">Editar data</string>
+    <string name="create_travel_see_details">Ver detalhes</string>
+    <string name="create_travel_select_date_range">Selecione a data de sua viagem</string>
+    <string name="create_travel_ok">OK</string>
+    <string name="create_travel_cancel">Cancelar</string>
     <string name="create_travel_delete_travel">Excluir</string>
     <string name="create_travel_name_placeholder">Nome da viagem</string>
     <string name="create_travel_delete_dialog_title">Deseja excluir o roteiro?</string>
     <string name="create_travel_delete_dialog_message">Ao confirmar, o roteiro será excluído permanentemente.</string>
+    <string name="create_travel_details_dialog_title">Detalhes</string>
+    <string name="create_travel_details_dialog_message_dates">Criado em: %1$s \nEditado em: %2$s</string>
+    <string name="create_travel_details_dialog_message_days">Dias de viagem: %1$d </string>
+    <string name="create_travel_details_dialog_close">Fechar</string>
 </resources>

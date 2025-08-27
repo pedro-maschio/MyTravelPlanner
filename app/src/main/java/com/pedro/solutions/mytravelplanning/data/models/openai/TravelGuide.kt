@@ -3,7 +3,6 @@ package com.pedro.solutions.mytravelplanning.data.models.openai
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import java.time.Instant
 import kotlin.time.ExperimentalTime
 
 
@@ -12,7 +11,8 @@ import kotlin.time.ExperimentalTime
 data class TravelGuide(
     val createdAt: Long = -1,
     val updatedAt: Long = -1,
-    val travelDate: Instant = Instant.ofEpochMilli(0L),
+    val formattedStartDate: String = "",
+    val formattedEndDate: String = "",
     val travelName: String = "",
     val days: List<Day?> = emptyList()
 )

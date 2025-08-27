@@ -35,6 +35,7 @@ fun TravelCard(
             .padding(all = DimenTwo)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = CardDefaults.outlinedCardBorder().copy(width = 0.5.dp),
         elevation = CardDefaults.elevatedCardElevation()
     ) {
         Column(
