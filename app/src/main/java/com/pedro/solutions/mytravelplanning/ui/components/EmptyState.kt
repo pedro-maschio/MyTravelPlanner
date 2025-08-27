@@ -3,6 +3,7 @@ package com.pedro.solutions.mytravelplanning.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Icon
@@ -16,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.ui.theme.TravelsColors
 import com.pedro.solutions.mytravelplanning.ui.theme.Typography
+import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenFive
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
 
@@ -34,6 +36,7 @@ fun EmptyState(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
+                modifier = Modifier.size(DimenFive),
                 imageVector = Icons.Default.WarningAmber,
                 tint = TravelsColors.Brand,
                 contentDescription = null

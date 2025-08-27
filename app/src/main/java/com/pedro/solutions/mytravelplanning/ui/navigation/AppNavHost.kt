@@ -24,7 +24,7 @@ fun AppNavHost(modifier: Modifier = Modifier, repository: TravelRepository = koi
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = if (repository.isShownIntroduction()) TravelRoutes.MainScreen else TravelRoutes.IntroScreen,
+        startDestination = TravelRoutes.MainScreen
     ) {
         composable<TravelRoutes.IntroScreen> { navBackStackEntry ->
             IntroScreen {
