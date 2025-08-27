@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
@@ -337,35 +336,6 @@ fun CreateTravelScreen(
         }
     }
 
-    @Composable
-    fun DraggableTravelActivity(
-        modifier: Modifier = Modifier,
-        item: TravelType.Activity
-    ) {
-        TravelTextField(
-            modifier = modifier
-                .padding(end = DimenOne),
-            value = item.title,
-            enabled = uiState.value.isEditing.not(),
-            onValueChange = {
-                viewModel.updateTravelActivityText(
-                    dayIndex = item.dayIndex,
-                    activityIndex = item.index,
-                    newText = it
-                )
-            })
-        if (uiState.value.isEditing) {
-            Icon(
-                modifier = Modifier
-                    .padding(horizontal = DimenOne),
-                imageVector = Icons.Default.DragIndicator,
-                contentDescription = null
-            )
-        }
-    }
-
-
-
     CreateTravelScaffold { innerPadding ->
         if (uiState.value.isDatePickerShowing) {
             DateRangePickerModal(
@@ -422,10 +392,20 @@ fun CreateTravelScreen(
                                 item = item
                             )
 
-                            is TravelType.Activity -> DraggableTravelActivity(
-                                modifier = Modifier.weight(1f),
-                                item = item,
-                            )
+                            is TravelType.Activity ->
+                                TravelTextField(
+                                    modifier = modifier
+                                        .weight(1f)
+                                        .padding(end = DimenOne),
+                                    value = item.title,
+                                    enabled = uiState.value.isEditing.not(),
+                                    onValueChange = {
+                                        viewModel.updateTravelActivityText(
+                                            dayIndex = item.dayIndex,
+                                            activityIndex = item.index,
+                                            newText = it
+                                        )
+                                    })
                         }
                     }
                 }
