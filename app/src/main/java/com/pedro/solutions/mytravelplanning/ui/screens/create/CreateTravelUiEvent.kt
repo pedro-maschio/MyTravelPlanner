@@ -4,4 +4,5 @@ sealed class CreateTravelUiEvent {
     object OnTravelDeleted : CreateTravelUiEvent()
     object OnTravelCreated : CreateTravelUiEvent()
     object OnDayAdded : CreateTravelUiEvent()
+    data class ShareTravel(val travelText: String) : CreateTravelUiEvent()
 }

@@ -1,5 +1,6 @@
 package com.pedro.solutions.mytravelplanning.ui.screens.create
 
+import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -109,6 +110,12 @@ fun CreateTravelTopBar(
                             })
 
                             DropdownMenuItem(text = {
+                                Text(stringResource(R.string.create_travel_share_travel))
+                            }, onClick = {
+                                viewModel.shareTravel()
+                            })
+
+                            DropdownMenuItem(text = {
                                 Text(text = stringResource(R.string.create_travel_delete_travel))
                             }, onClick = {
                                 viewModel.showDeleteDialog()
@@ -179,6 +186,17 @@ fun CreateTravelScreen(
                         R.string.create_travel_day_placeholder
                     )
                 )
+
+                is CreateTravelUiEvent.ShareTravel -> {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, event.travelText)
+                        type = "text/plain"
+                    }
+
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    context.startActivity(shareIntent)
+                }
             }
 
         }

@@ -28,6 +28,7 @@
     <string name="create_travel_add_date">Adicionar data</string>
     <string name="create_travel_edit_date">Editar data</string>
     <string name="create_travel_see_details">Ver detalhes</string>
+    <string name="create_travel_share_travel">Compartilhar</string>
     <string name="create_travel_select_date_range">Selecione a data de sua viagem</string>
     <string name="create_travel_ok">OK</string>
     <string name="create_travel_cancel">Cancelar</string>

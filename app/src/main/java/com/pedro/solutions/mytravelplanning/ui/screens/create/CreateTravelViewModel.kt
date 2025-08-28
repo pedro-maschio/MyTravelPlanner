@@ -256,6 +256,28 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         _uiEvent.emit(CreateTravelUiEvent.OnTravelCreated)
     }
 
+    fun shareTravel() = viewModelScope.launch {
+        setDropdownMenuShowing(false)
+        val travelText = buildString {
+            if (uiState.value.travel.travelName.isNotEmpty()) {
+                appendLine(_uiState.value.travel.travelName)
+            }
+            if (uiState.value.hasTravelDates) {
+                appendLine("${_uiState.value.travel.formattedStartDate} - ${_uiState.value.travel.formattedEndDate}")
+            }
+            _uiState.value.travel.days.forEach {
+                if (it != null) {
+                    appendLine("  - ${it.title}")
+                    it.activities.forEach { activity ->
+                        appendLine("    - $activity")
+                    }
+                }
+            }
+        }
+
+        _uiEvent.emit(CreateTravelUiEvent.ShareTravel(travelText))
+    }
+
     fun showDeleteDialog() {
         _uiState.update { it.copy(isDeleteDialogShowing = true) }
     }
@@ -273,7 +295,6 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
             buildTravelState()
         }
     }
-
 
     private fun updateDaysIndexes() {
         val travels = uiState.value.travels.toMutableList()
