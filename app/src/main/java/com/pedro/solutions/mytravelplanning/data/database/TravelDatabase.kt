@@ -9,7 +9,7 @@ import com.pedro.solutions.mytravelplanning.data.database.entities.TravelGuideEn
 
 @Database(
     entities = [TravelGuideEntity::class, ActivityEntity::class, DayEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

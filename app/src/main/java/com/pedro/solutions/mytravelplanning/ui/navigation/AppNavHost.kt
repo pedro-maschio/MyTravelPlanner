@@ -12,7 +12,6 @@ import androidx.navigation.toRoute
 import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
 import com.pedro.solutions.mytravelplanning.ui.screens.create.CreateTravelScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.detail.TravelDetailScreen
-import com.pedro.solutions.mytravelplanning.ui.screens.intro.IntroScreen
 import com.pedro.solutions.mytravelplanning.ui.screens.main.MainScreen
 import org.koin.compose.koinInject
 
@@ -26,13 +25,6 @@ fun AppNavHost(modifier: Modifier = Modifier, repository: TravelRepository = koi
         navController = navController,
         startDestination = TravelRoutes.MainScreen
     ) {
-        composable<TravelRoutes.IntroScreen> { navBackStackEntry ->
-            IntroScreen {
-                navController.popBackStack()
-                navController.navigate(TravelRoutes.MainScreen)
-            }
-        }
-
         composable<TravelRoutes.MainScreen> { backStackEntry ->
             MainScreen(onClickFloatingButton = {
                 navController.navigate(TravelRoutes.CreateTravelScreen())
@@ -57,21 +49,6 @@ fun AppNavHost(modifier: Modifier = Modifier, repository: TravelRepository = koi
                     navController.popBackStack()
                 })
         }
-// Re-add once our backend gets ready!
-//        composable<TravelRoutes.GenerateTravelScreen> { backStackEntry ->
-//            val travelId: TravelRoutes.GenerateTravelScreen = backStackEntry.toRoute()
-//            GenerateTravelScreen(
-//                travelId = travelId.id,
-//                onTravelGenerated = {
-//                    navController.navigate(
-//                        TravelRoutes.TravelDetailScreen(
-//                            travelGuideJson = Json.encodeToString(
-//                                it
-//                            )
-//                        )
-//                    )
-//                })
-//        }
 
         composable<TravelRoutes.TravelDetailScreen> { backStackEntry ->
             val travelData = backStackEntry.toRoute<TravelRoutes.TravelDetailScreen>()
