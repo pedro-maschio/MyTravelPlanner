@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
@@ -76,43 +77,34 @@ fun MainScreen(
     }
 
     if (uiState.value.isDeleteDialogShowing) {
-        AlertDialog(
-            icon = {
-                Icon(Icons.Default.Info, contentDescription = null)
-            },
-            title = {
-                Text(text = stringResource(R.string.travels_listing_delete_dialog_title))
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        R.string.travels_listing_delete_dialog_message,
-                        uiState.value.selectedTravelIds.size
-                    )
+        AlertDialog(icon = {
+            Icon(Icons.Default.Info, contentDescription = null)
+        }, title = {
+            Text(text = stringResource(R.string.travels_listing_delete_dialog_title))
+        }, text = {
+            Text(
+                text = stringResource(
+                    R.string.travels_listing_delete_dialog_message,
+                    uiState.value.selectedTravelIds.size
                 )
-            },
-            onDismissRequest = {
-                viewModel.hideDeleteDialog()
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.onDeleteTravelsClick()
-                    }
-                ) {
-                    Text(text = stringResource(R.string.travels_listing_delete_dialog_confirm_message))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.hideDeleteDialog()
-                    }
-                ) {
-                    Text(text = stringResource(R.string.travels_listing_delete_dialog_cancel_message))
-                }
+            )
+        }, onDismissRequest = {
+            viewModel.hideDeleteDialog()
+        }, confirmButton = {
+            TextButton(
+                onClick = {
+                    viewModel.onDeleteTravelsClick()
+                }) {
+                Text(text = stringResource(R.string.travels_listing_delete_dialog_confirm_message))
             }
-        )
+        }, dismissButton = {
+            TextButton(
+                onClick = {
+                    viewModel.hideDeleteDialog()
+                }) {
+                Text(text = stringResource(R.string.travels_listing_delete_dialog_cancel_message))
+            }
+        })
     }
 
     val topBarText = if (uiState.value.isOnSelectionMode) {
@@ -150,76 +142,75 @@ fun MainScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            if (uiState.value.isOnSelectionMode) {
-                TravelAppBar(
-                    modifier = Modifier.padding(vertical = DimenOne),
-                    title = topBarText,
-                    actions = { SelectionModeAction() })
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    SearchBar(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = DimenOne, vertical = DimenOne),
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                query = uiState.value.searchTerm,
-                                onQueryChange = { viewModel.updateQuery(it) },
-                                onSearch = {
-                                    viewModel.updateQuery(it)
-                                },
-                                expanded = uiState.value.isSearchScreenExpanded,
-                                onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
-                                placeholder = { Text(text = stringResource(R.string.travels_listing_search_travel_placeholder)) },
-                                leadingIcon = {
+    Scaffold(modifier = modifier, topBar = {
+        if (uiState.value.isOnSelectionMode) {
+            TravelAppBar(
+                modifier = Modifier.padding(vertical = DimenOne),
+                title = topBarText,
+                actions = { SelectionModeAction() })
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+            ) {
+                SearchBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = DimenOne, vertical = DimenOne),
+                    inputField = {
+                        SearchBarDefaults.InputField(
+                            query = uiState.value.searchTerm,
+                            onQueryChange = { viewModel.updateQuery(it) },
+                            onSearch = {
+                                viewModel.updateQuery(it)
+                            },
+                            expanded = uiState.value.isSearchScreenExpanded,
+                            onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
+                            placeholder = { Text(text = stringResource(R.string.travels_listing_search_travel_placeholder)) },
+                            leadingIcon = {
+                                IconButton(onClick = {
+                                    if (uiState.value.isSearchScreenExpanded) {
+                                        viewModel.setSearchScreenExpanded(false)
+                                    }
+                                }, enabled = uiState.value.isSearchScreenExpanded) {
                                     Icon(
-                                        imageVector = Icons.Default.Search,
+                                        imageVector = if (uiState.value.isSearchScreenExpanded) Icons.AutoMirrored.Filled.ArrowBack else Icons.Default.Search,
                                         contentDescription = null
                                     )
-                                },
-                                trailingIcon = {
-                                    if (uiState.value.searchTerm.isNotEmpty()) {
-                                        IconButton(onClick = { viewModel.clearSearchQuery() }) {
-                                            Icon(
-                                                imageVector = Icons.Default.Clear,
-                                                contentDescription = null
-                                            )
-                                        }
+                                }
+                            },
+                            trailingIcon = {
+                                if (uiState.value.searchTerm.isNotEmpty()) {
+                                    IconButton(onClick = { viewModel.clearSearchQuery() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = null
+                                        )
                                     }
                                 }
-                            )
-                        },
-                        expanded = uiState.value.isSearchScreenExpanded,
-                        onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
-                    ) {
-                        LazyColumn {
-                            items(uiState.value.searchedTravels) { travel ->
-                                TravelCard(travel = travel, onLongClick = {
-                                    // User won`t be able to select during search!
-                                }, onClick = {
-                                    viewModel.openCreateTravelScreen(travel.travelId)
-                                })
-                            }
+                            })
+                    },
+                    expanded = uiState.value.isSearchScreenExpanded,
+                    onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
+                ) {
+                    LazyColumn {
+                        items(uiState.value.searchedTravels) { travel ->
+                            TravelCard(travel = travel, onLongClick = {
+                                // User won`t be able to select during search!
+                            }, onClick = {
+                                viewModel.openCreateTravelScreen(travel.travelId)
+                            })
                         }
                     }
                 }
             }
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick =
-                    onClickFloatingButton
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null)
-            }
         }
-    ) { innerPadding ->
+    }, floatingActionButton = {
+        FloatingActionButton(
+            onClick = onClickFloatingButton
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = null)
+        }
+    }) { innerPadding ->
         LazyColumn(
             modifier = modifier
                 .padding(innerPadding)
