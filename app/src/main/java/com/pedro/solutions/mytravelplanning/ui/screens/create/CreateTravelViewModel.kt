@@ -8,7 +8,6 @@ import com.pedro.solutions.mytravelplanning.data.models.TravelType
 import com.pedro.solutions.mytravelplanning.data.models.openai.Day
 import com.pedro.solutions.mytravelplanning.data.models.openai.TravelGuide
 import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -20,14 +19,13 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateTravelUiState())
-
-    // We are setting the replay as sometimes addDay/onDayAdded does not work
-    private val _uiEvent = MutableSharedFlow<CreateTravelUiEvent>(replay = 1)
-
     val uiState = _uiState.asStateFlow()
-    val uiEvent = _uiEvent
-
     var internalTravelId: Long? = null
+
+    fun resetUiState() {
+        internalTravelId = null
+        _uiState.value = CreateTravelUiState()
+    }
 
     fun loadTravel(travelId: Long?) = viewModelScope.launch {
         if (travelId == null) return@launch
@@ -115,10 +113,6 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         _uiState.update { it.copy(isEditing = isEditing) }
     }
 
-    fun addDay() = viewModelScope.launch {
-        _uiEvent.emit(CreateTravelUiEvent.OnDayAdded)
-    }
-
     fun onDayAdded(dayTitle: String) {
         _uiState.update {
             it.copy(
@@ -178,20 +172,16 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         _uiState.update { it.copy(isDropDownMenuShowing = isShowing) }
     }
 
-    fun showDetailsAlertDialog() {
-        _uiState.update { it.copy(isDetailsAlertDialogShowing = true) }
+    fun setDetailsAlertDialogShowing(isShowing: Boolean) {
+        _uiState.update { it.copy(isDetailsAlertDialogShowing = isShowing) }
     }
 
-    fun hideDetailsAlertDialog() {
-        _uiState.update { it.copy(isDetailsAlertDialogShowing = false) }
+    fun setDeleteDialogShowing(isShowing: Boolean) {
+        _uiState.update { it.copy(isDeleteDialogShowing = isShowing) }
     }
 
-    fun showDatePickerModal() {
-        _uiState.update { it.copy(isDatePickerShowing = true) }
-    }
-
-    fun hideDatePickerModal() {
-        _uiState.update { it.copy(isDatePickerShowing = false) }
+    fun setDatePickerModal(isShowing: Boolean) {
+        _uiState.update { it.copy(isDatePickerShowing = isShowing) }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -253,10 +243,9 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
                 )
             )
         }
-        _uiEvent.emit(CreateTravelUiEvent.OnTravelCreated)
     }
 
-    fun shareTravel() = viewModelScope.launch {
+    fun shareTravel() {
         setDropdownMenuShowing(false)
         val travelText = buildString {
             if (uiState.value.travel.travelName.isNotEmpty()) {
@@ -274,8 +263,7 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
                 }
             }
         }
-
-        _uiEvent.emit(CreateTravelUiEvent.ShareTravel(travelText))
+        _uiState.update { it.copy(shareTravelText = travelText) }
     }
 
     fun showDeleteDialog() {
@@ -334,8 +322,5 @@ class CreateTravelViewModel(val repository: TravelRepository) : ViewModel() {
         if (internalTravelId != null) {
             repository.deleteTravel(internalTravelId!!)
         }
-        // We emit the event anyway. A new travel does not have an id yet,
-        // but we are showing the "Delete" option for them also.
-        _uiEvent.emit(CreateTravelUiEvent.OnTravelDeleted)
     }
 }

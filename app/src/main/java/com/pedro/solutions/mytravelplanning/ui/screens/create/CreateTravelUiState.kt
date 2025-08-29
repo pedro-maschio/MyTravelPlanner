@@ -18,5 +18,6 @@ data class CreateTravelUiState(
     val isLoading: Boolean = false,
     val isEditing: Boolean = false,
     val formattedCreatedAt: String = "",
-    val formattedUpdatedAt: String = ""
+    val formattedUpdatedAt: String = "",
+    val shareTravelText: String = "",
 )

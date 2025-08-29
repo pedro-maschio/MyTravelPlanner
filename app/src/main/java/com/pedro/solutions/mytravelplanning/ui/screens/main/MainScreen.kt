@@ -29,54 +29,34 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.tooling.preview.Preview
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.ui.components.EmptyState
 import com.pedro.solutions.mytravelplanning.ui.components.TravelAppBar
 import com.pedro.solutions.mytravelplanning.ui.components.TravelCard
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenFive
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
-import kotlinx.coroutines.flow.collectLatest
-import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    viewModel: MainScreenViewModel = koinViewModel(),
-    onClickTravelItem: (Long) -> Unit,
-    onClickFloatingButton: () -> Unit,
-    onGoBack: () -> Unit
+    uiState: MainScreenUiState,
+    onEvent: (MainScreenUiEvent) -> Unit
 ) {
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadTravels()
-    }
-
     BackHandler {
-        if (uiState.value.isOnSelectionMode) {
-            viewModel.setOnSelectionMode(false)
+        if (uiState.isOnSelectionMode) {
+            onEvent(MainScreenUiEvent.OnSelectionModeChanged(false))
         } else {
-            viewModel.goBack()
+            onEvent(MainScreenUiEvent.GoBack)
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.uiEvent.collectLatest {
-            when (it) {
-                is MainScreenUiEvent.OpenCreateTravelScreen -> onClickTravelItem(it.travelId)
-                is MainScreenUiEvent.GoBack -> onGoBack()
-            }
-        }
-    }
-
-    if (uiState.value.isDeleteDialogShowing) {
+    if (uiState.isDeleteDialogShowing) {
         AlertDialog(icon = {
             Icon(Icons.Default.Info, contentDescription = null)
         }, title = {
@@ -85,33 +65,33 @@ fun MainScreen(
             Text(
                 text = stringResource(
                     R.string.travels_listing_delete_dialog_message,
-                    uiState.value.selectedTravelIds.size
+                    uiState.selectedTravelIds.size
                 )
             )
         }, onDismissRequest = {
-            viewModel.hideDeleteDialog()
+            onEvent(MainScreenUiEvent.HideDeleteDialog)
         }, confirmButton = {
             TextButton(
                 onClick = {
-                    viewModel.onDeleteTravelsClick()
+                    onEvent(MainScreenUiEvent.OnDeleteTravelsClick)
                 }) {
                 Text(text = stringResource(R.string.travels_listing_delete_dialog_confirm_message))
             }
         }, dismissButton = {
             TextButton(
                 onClick = {
-                    viewModel.hideDeleteDialog()
+                    onEvent(MainScreenUiEvent.HideDeleteDialog)
                 }) {
                 Text(text = stringResource(R.string.travels_listing_delete_dialog_cancel_message))
             }
         })
     }
 
-    val topBarText = if (uiState.value.isOnSelectionMode) {
+    val topBarText = if (uiState.isOnSelectionMode) {
         pluralStringResource(
             R.plurals.travels_listing_selected_items,
-            uiState.value.selectedTravelIds.size,
-            uiState.value.selectedTravelIds.size
+            uiState.selectedTravelIds.size,
+            uiState.selectedTravelIds.size
         )
     } else {
         stringResource(R.string.travels_listing_title)
@@ -119,22 +99,22 @@ fun MainScreen(
 
     @Composable
     fun SelectionModeAction() {
-        uiState.value.isOnSelectionMode.takeIf { it }?.let {
+        uiState.isOnSelectionMode.takeIf { it }?.let {
             IconButton(onClick = {
-                viewModel.setDropdownMenuShowing(true)
+                onEvent(MainScreenUiEvent.SetDropDownMenuShowing(true))
             }) {
                 Icon(
                     imageVector = Icons.Default.MoreVert, contentDescription = null
                 )
                 Box(contentAlignment = Alignment.TopEnd) {
                     DropdownMenu(
-                        expanded = uiState.value.isDropDownMenuShowing, onDismissRequest = {
-                            viewModel.setDropdownMenuShowing(false)
+                        expanded = uiState.isDropDownMenuShowing, onDismissRequest = {
+                            onEvent(MainScreenUiEvent.SetDropDownMenuShowing(false))
                         }) {
                         DropdownMenuItem(text = {
                             Text(text = stringResource(R.string.travels_listing_delete_dropdown_title))
                         }, onClick = {
-                            viewModel.showDeleteDialog()
+                            onEvent(MainScreenUiEvent.ShowDeleteDialog)
                         })
                     }
                 }
@@ -143,7 +123,7 @@ fun MainScreen(
     }
 
     Scaffold(modifier = modifier, topBar = {
-        if (uiState.value.isOnSelectionMode) {
+        if (uiState.isOnSelectionMode) {
             TravelAppBar(
                 modifier = Modifier.padding(vertical = DimenOne),
                 title = topBarText,
@@ -158,29 +138,35 @@ fun MainScreen(
                         .padding(horizontal = DimenOne, vertical = DimenOne),
                     inputField = {
                         SearchBarDefaults.InputField(
-                            query = uiState.value.searchTerm,
-                            onQueryChange = { viewModel.updateQuery(it) },
+                            query = uiState.searchTerm,
+                            onQueryChange = { onEvent(MainScreenUiEvent.UpdateQuery(it)) },
                             onSearch = {
-                                viewModel.updateQuery(it)
+                                onEvent(MainScreenUiEvent.UpdateQuery(it))
                             },
-                            expanded = uiState.value.isSearchScreenExpanded,
-                            onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
+                            expanded = uiState.isSearchScreenExpanded,
+                            onExpandedChange = {
+                                onEvent(
+                                    MainScreenUiEvent.SetSearchScreenExpanded(
+                                        it
+                                    )
+                                )
+                            },
                             placeholder = { Text(text = stringResource(R.string.travels_listing_search_travel_placeholder)) },
                             leadingIcon = {
                                 IconButton(onClick = {
-                                    if (uiState.value.isSearchScreenExpanded) {
-                                        viewModel.setSearchScreenExpanded(false)
+                                    if (uiState.isSearchScreenExpanded) {
+                                        onEvent(MainScreenUiEvent.SetSearchScreenExpanded(false))
                                     }
-                                }, enabled = uiState.value.isSearchScreenExpanded) {
+                                }, enabled = uiState.isSearchScreenExpanded) {
                                     Icon(
-                                        imageVector = if (uiState.value.isSearchScreenExpanded) Icons.AutoMirrored.Filled.ArrowBack else Icons.Default.Search,
+                                        imageVector = if (uiState.isSearchScreenExpanded) Icons.AutoMirrored.Filled.ArrowBack else Icons.Default.Search,
                                         contentDescription = null
                                     )
                                 }
                             },
                             trailingIcon = {
-                                if (uiState.value.searchTerm.isNotEmpty()) {
-                                    IconButton(onClick = { viewModel.clearSearchQuery() }) {
+                                if (uiState.searchTerm.isNotEmpty()) {
+                                    IconButton(onClick = { onEvent(MainScreenUiEvent.ClearSearchQuery) }) {
                                         Icon(
                                             imageVector = Icons.Default.Clear,
                                             contentDescription = null
@@ -189,15 +175,15 @@ fun MainScreen(
                                 }
                             })
                     },
-                    expanded = uiState.value.isSearchScreenExpanded,
-                    onExpandedChange = { viewModel.setSearchScreenExpanded(it) },
+                    expanded = uiState.isSearchScreenExpanded,
+                    onExpandedChange = { onEvent(MainScreenUiEvent.SetSearchScreenExpanded(it)) },
                 ) {
                     LazyColumn {
-                        items(uiState.value.searchedTravels) { travel ->
+                        items(uiState.searchedTravels) { travel ->
                             TravelCard(travel = travel, onLongClick = {
                                 // User won`t be able to select during search!
                             }, onClick = {
-                                viewModel.openCreateTravelScreen(travel.travelId)
+                                onEvent(MainScreenUiEvent.OpenCreateTravelScreen(travel.travelId))
                             })
                         }
                     }
@@ -206,7 +192,7 @@ fun MainScreen(
         }
     }, floatingActionButton = {
         FloatingActionButton(
-            onClick = onClickFloatingButton
+            onClick = { onEvent(MainScreenUiEvent.OnClickFloatingButton) }
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
         }
@@ -216,17 +202,17 @@ fun MainScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            items(uiState.value.travels) { travel ->
+            items(uiState.travels) { travel ->
                 TravelCard(travel = travel, onLongClick = {
-                    if (!uiState.value.isOnSelectionMode) {
-                        viewModel.setOnSelectionMode(true)
+                    if (!uiState.isOnSelectionMode) {
+                        onEvent(MainScreenUiEvent.OnSelectionModeChanged(true))
                     }
-                    viewModel.selectTravel(travel.travelId)
+                    onEvent(MainScreenUiEvent.OnSelectTravel(travel.travelId))
                 }, onClick = {
-                    if (uiState.value.isOnSelectionMode) {
-                        viewModel.selectTravel(travel.travelId)
+                    if (uiState.isOnSelectionMode) {
+                        onEvent(MainScreenUiEvent.OnSelectTravel(travel.travelId))
                     } else {
-                        viewModel.openCreateTravelScreen(travel.travelId)
+                        onEvent(MainScreenUiEvent.OpenCreateTravelScreen(travel.travelId))
                     }
                 })
             }
@@ -235,11 +221,39 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = DimenFive),
-                    isEmpty = uiState.value.shouldShowEmptyState,
+                    isEmpty = uiState.shouldShowEmptyState,
                     title = stringResource(R.string.travels_listing_empty_message),
                     supportingText = stringResource(R.string.travels_listing_empty_supporting_text)
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun MainScreenPreview(modifier: Modifier = Modifier) {
+    MainScreen(
+        uiState = MainScreenUiState(
+            travels = listOf(
+                MainScreenTravel(
+                    "João Pessoa",
+                    123,
+                    false
+                ),
+                MainScreenTravel(
+                    "Londres",
+                    123,
+                    false
+                ),
+                MainScreenTravel(
+                    "Ilheus",
+                    123,
+                    false
+                )
+            )
+        )
+    ) {
+
     }
 }

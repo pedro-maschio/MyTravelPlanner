@@ -33,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,7 +40,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pedro.solutions.mytravelplanning.R
 import com.pedro.solutions.mytravelplanning.data.models.TravelType
 import com.pedro.solutions.mytravelplanning.ui.components.LoadingState
@@ -54,8 +52,6 @@ import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenHalf
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenOne
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenSix
 import com.pedro.solutions.mytravelplanning.ui.utils.Dimens.DimenTwo
-import kotlinx.coroutines.flow.collectLatest
-import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -64,61 +60,72 @@ import java.util.TimeZone
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CreateTravelTopBar(
-    modifier: Modifier = Modifier, viewModel: CreateTravelViewModel = koinViewModel()
+    modifier: Modifier = Modifier,
+    uiState: CreateTravelUiState,
+    onEvent: (CreateTravelUiEvent) -> Unit
 ) {
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     TravelAppBar(
         modifier = modifier,
         title = stringResource(R.string.create_travel_title),
         actions = {
-            if (!uiState.value.isEditing) {
+            if (!uiState.isEditing) {
                 IconButton(onClick = {
-                    viewModel.setDropdownMenuShowing(true)
+                    onEvent(CreateTravelUiEvent.SetDropdownMenuShowing(true))
                 }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert, contentDescription = null
                     )
                     Box(contentAlignment = Alignment.TopEnd) {
                         DropdownMenu(
-                            expanded = uiState.value.isDropDownMenuShowing, onDismissRequest = {
-                                viewModel.setDropdownMenuShowing(false)
+                            expanded = uiState.isDropDownMenuShowing, onDismissRequest = {
+                                onEvent(CreateTravelUiEvent.SetDropdownMenuShowing(false))
                             }) {
                             DropdownMenuItem(text = {
                                 Text(text = stringResource(R.string.create_travel_edit))
                             }, onClick = {
-                                viewModel.setIsEditing(true)
-                                viewModel.setDropdownMenuShowing(false)
+                                onEvent(CreateTravelUiEvent.SetIsEditing(true))
+                                onEvent(CreateTravelUiEvent.SetDropdownMenuShowing(false))
                             })
                             DropdownMenuItem(text = {
                                 Text(
-                                    text = if (uiState.value.hasTravelDates) {
+                                    text = if (uiState.hasTravelDates) {
                                         stringResource(R.string.create_travel_edit_date)
                                     } else {
                                         stringResource(R.string.create_travel_add_date)
                                     }
                                 )
                             }, onClick = {
-                                viewModel.setDropdownMenuShowing(false)
-                                viewModel.showDatePickerModal()
+                                onEvent(CreateTravelUiEvent.SetDropdownMenuShowing(false))
+                                onEvent(CreateTravelUiEvent.SetDatePickerShowing(true))
                             })
 
                             DropdownMenuItem(text = {
                                 Text(stringResource(R.string.create_travel_see_details))
                             }, onClick = {
-                                viewModel.setDropdownMenuShowing(false)
-                                viewModel.showDetailsAlertDialog()
+                                onEvent(CreateTravelUiEvent.SetDropdownMenuShowing(false))
+                                onEvent(CreateTravelUiEvent.SetDetailsAlertDialogShowing(true))
                             })
 
                             DropdownMenuItem(text = {
                                 Text(stringResource(R.string.create_travel_share_travel))
                             }, onClick = {
-                                viewModel.shareTravel()
+                                onEvent(CreateTravelUiEvent.ShareTravel)
+                                val sendIntent: Intent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, uiState.shareTravelText)
+                                    type = "text/plain"
+                                }
+
+                                val shareIntent = Intent.createChooser(sendIntent, null)
+                                context.startActivity(shareIntent)
+
                             })
 
                             DropdownMenuItem(text = {
                                 Text(text = stringResource(R.string.create_travel_delete_travel))
                             }, onClick = {
-                                viewModel.showDeleteDialog()
+                                onEvent(CreateTravelUiEvent.SetDeleteDialogShowing(true))
                             })
                         }
                     }
@@ -127,10 +134,10 @@ fun CreateTravelTopBar(
         },
         navigationIcon = {
             IconButton(onClick = {
-                if (uiState.value.isEditing) {
-                    viewModel.setIsEditing(false)
+                if (uiState.isEditing) {
+                    onEvent(CreateTravelUiEvent.SetIsEditing(false))
                 } else {
-                    viewModel.createTravel()
+                    onEvent(CreateTravelUiEvent.OnTravelCreated)
                 }
             }) {
                 Icon(
@@ -144,10 +151,14 @@ fun CreateTravelTopBar(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CreateTravelScaffold(
-    modifier: Modifier = Modifier, content: @Composable (PaddingValues) -> Unit
+    modifier: Modifier = Modifier,
+    uiState: CreateTravelUiState,
+    onEvent: (CreateTravelUiEvent) -> Unit,
+    content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
-        modifier = modifier, topBar = { CreateTravelTopBar() }) { innerPadding ->
+        modifier = modifier,
+        topBar = { CreateTravelTopBar(uiState = uiState, onEvent = onEvent) }) { innerPadding ->
         content(innerPadding)
     }
 }
@@ -157,58 +168,21 @@ fun CreateTravelScaffold(
 @Composable
 fun CreateTravelScreen(
     modifier: Modifier = Modifier,
-    viewModel: CreateTravelViewModel = koinViewModel(),
-    travelId: Long? = null,
-    isEditing: Boolean = false,
-    onTravelCreated: () -> Unit,
-    onTravelDeleted: () -> Unit
+    uiState: CreateTravelUiState,
+    onEvent: (CreateTravelUiEvent) -> Unit
 ) {
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
     BackHandler {
         // TODO: fix the focus from the keyboard, when the user clicks back
-        if (uiState.value.isEditing) {
-            viewModel.setIsEditing(false)
+        if (uiState.isEditing) {
+            onEvent(CreateTravelUiEvent.SetIsEditing(false))
         } else {
-            viewModel.createTravel()
+            onEvent(CreateTravelUiEvent.OnTravelCreated)
         }
     }
-
-    LaunchedEffect(Unit) {
-        viewModel.uiEvent.collectLatest { event ->
-            when (event) {
-                is CreateTravelUiEvent.OnTravelDeleted -> onTravelDeleted()
-                is CreateTravelUiEvent.OnTravelCreated -> onTravelCreated()
-                is CreateTravelUiEvent.OnDayAdded -> viewModel.onDayAdded(
-                    dayTitle = context.getString(
-                        R.string.create_travel_day_placeholder
-                    )
-                )
-
-                is CreateTravelUiEvent.ShareTravel -> {
-                    val sendIntent: Intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, event.travelText)
-                        type = "text/plain"
-                    }
-
-                    val shareIntent = Intent.createChooser(sendIntent, null)
-                    context.startActivity(shareIntent)
-                }
-            }
-
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.loadTravel(travelId)
-        viewModel.setEditingState(isEditing)
-        viewModel.addDay()
-    }
-
-    if (uiState.value.isDeleteDialogShowing) {
+    if (uiState.isDeleteDialogShowing) {
         TravelDialog(
             title = stringResource(R.string.create_travel_delete_dialog_title),
             message = {
@@ -219,44 +193,44 @@ fun CreateTravelScreen(
                 )
             },
             onDismiss = {
-                viewModel.hideDeleteDialog()
+                onEvent(CreateTravelUiEvent.SetDeleteDialogShowing(false))
             },
             onConfirm = {
-                viewModel.deleteTravel()
+                onEvent(CreateTravelUiEvent.OnTravelDeleted)
             },
             onCancel = {
-                viewModel.hideDeleteDialog()
+                onEvent(CreateTravelUiEvent.SetDeleteDialogShowing(false))
             })
     }
 
-    if (uiState.value.isDetailsAlertDialogShowing) {
+    if (uiState.isDetailsAlertDialogShowing) {
         TravelDialog(
             title = stringResource(R.string.create_travel_details_dialog_title),
             message = {
                 Column {
-                    if (uiState.value.hasTravelDates) {
+                    if (uiState.hasTravelDates) {
                         Text(
                             text = stringResource(
                                 R.string.create_travel_details_dialog_message_dates,
-                                uiState.value.formattedCreatedAt,
-                                uiState.value.formattedUpdatedAt,
+                                uiState.formattedCreatedAt,
+                                uiState.formattedUpdatedAt,
                             )
                         )
                     }
                     Text(
                         text = stringResource(
                             R.string.create_travel_details_dialog_message_days,
-                            uiState.value.travel.days.size
+                            uiState.travel.days.size
                         )
                     )
                 }
             },
             confirmButtonText = stringResource(R.string.create_travel_details_dialog_close),
             onDismiss = {
-                viewModel.hideDetailsAlertDialog()
+                onEvent(CreateTravelUiEvent.SetDetailsAlertDialogShowing(false))
             },
             onConfirm = {
-                viewModel.hideDetailsAlertDialog()
+                onEvent(CreateTravelUiEvent.SetDetailsAlertDialogShowing(false))
             })
     }
 
@@ -267,18 +241,16 @@ fun CreateTravelScreen(
             modifier = modifier,
             value = item.title,
             onValueChange = {
-                viewModel.updateTravelDayText(
-                    index = item.index, newText = it
-                )
+                onEvent(CreateTravelUiEvent.UpdateTravelDayText(item.index, it))
             },
-            enabled = uiState.value.isEditing.not()
+            enabled = uiState.isEditing.not()
         )
-        if (uiState.value.isEditing) {
+        if (uiState.isEditing) {
             Icon(
                 modifier = Modifier
                     .padding(horizontal = DimenOne)
                     .clickable {
-                        viewModel.deleteDay(item.index)
+                        onEvent(CreateTravelUiEvent.DeleteDay(item.index))
                     },
                 imageVector = Icons.Default.Delete,
                 contentDescription = null
@@ -288,7 +260,7 @@ fun CreateTravelScreen(
                 modifier = Modifier
                     .padding(horizontal = DimenOne)
                     .clickable {
-                        viewModel.addActivity(item.index)
+                        onEvent(CreateTravelUiEvent.AddActivity(item.index))
                         focusManager.clearFocus()
                     },
                 imageVector = Icons.Default.Add,
@@ -299,6 +271,7 @@ fun CreateTravelScreen(
 
     @Composable
     fun DateRangePickerModal(
+        uiState: CreateTravelUiState,
         startDate: String,
         endDate: String,
         onDateRangeSelected: (Pair<Long?, Long?>) -> Unit,
@@ -308,7 +281,7 @@ fun CreateTravelScreen(
         sdf.timeZone = TimeZone.getTimeZone("UTC") // prevents timezone shifts
         var start: Date? = null
         var end: Date? = null
-        if (uiState.value.hasTravelDates) {
+        if (uiState.hasTravelDates) {
             start = sdf.parse(startDate)
             end = sdf.parse(endDate)
         }
@@ -354,20 +327,21 @@ fun CreateTravelScreen(
         }
     }
 
-    CreateTravelScaffold { innerPadding ->
-        if (uiState.value.isDatePickerShowing) {
+    CreateTravelScaffold(uiState = uiState, onEvent = onEvent) { innerPadding ->
+        if (uiState.isDatePickerShowing) {
             DateRangePickerModal(
-                startDate = uiState.value.travel.formattedStartDate,
-                endDate = uiState.value.travel.formattedEndDate,
+                uiState = uiState,
+                startDate = uiState.travel.formattedStartDate,
+                endDate = uiState.travel.formattedEndDate,
                 onDateRangeSelected = {
-                    viewModel.onDateRangeSelected(it)
+                    onEvent(CreateTravelUiEvent.DateRangeSelected(it))
                 },
                 onDismiss = {
-                    viewModel.hideDatePickerModal()
+                    onEvent(CreateTravelUiEvent.SetDatePickerShowing(false))
                 })
         }
 
-        if (uiState.value.isLoading) {
+        if (uiState.isLoading) {
             LoadingState(isLoading = true)
         } else {
             LazyColumn(
@@ -378,27 +352,27 @@ fun CreateTravelScreen(
                 verticalArrangement = Arrangement.spacedBy(DimenOne),
             ) {
                 item {
-                    if (uiState.value.hasTravelDates) {
+                    if (uiState.hasTravelDates) {
                         TravelDateCard(
-                            startDate = uiState.value.travel.formattedStartDate,
-                            endDate = uiState.value.travel.formattedEndDate
+                            startDate = uiState.travel.formattedStartDate,
+                            endDate = uiState.travel.formattedEndDate
                         ) {
-                            viewModel.showDatePickerModal()
+                            onEvent(CreateTravelUiEvent.SetDatePickerShowing(true))
                         }
                     }
                 }
                 item {
                     TravelTextField(
                         modifier = Modifier.padding(vertical = DimenOne),
-                        value = uiState.value.travelName,
+                        value = uiState.travelName,
                         placeHolder = stringResource(R.string.create_travel_name_placeholder),
                         onValueChange = {
-                            viewModel.updateTravelName(travelName = it)
+                            onEvent(CreateTravelUiEvent.UpdateTravelName(it))
                         })
                 }
 
                 itemsIndexed(
-                    items = uiState.value.travels
+                    items = uiState.travels
                 ) { index, item ->
                     Row(
                         modifier = Modifier.padding(vertical = DimenHalf),
@@ -416,12 +390,14 @@ fun CreateTravelScreen(
                                         .weight(1f)
                                         .padding(end = DimenOne),
                                     value = item.title,
-                                    enabled = uiState.value.isEditing.not(),
+                                    enabled = uiState.isEditing.not(),
                                     onValueChange = {
-                                        viewModel.updateTravelActivityText(
-                                            dayIndex = item.dayIndex,
-                                            activityIndex = item.index,
-                                            newText = it
+                                        onEvent(
+                                            CreateTravelUiEvent.UpdateTravelActivityText(
+                                                dayIndex = item.dayIndex,
+                                                activityIndex = item.index,
+                                                newText = it
+                                            )
                                         )
                                     })
                         }
@@ -429,7 +405,7 @@ fun CreateTravelScreen(
                 }
 
                 item {
-                    if (!uiState.value.isEditing) {
+                    if (!uiState.isEditing) {
                         TravelButton(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -438,7 +414,13 @@ fun CreateTravelScreen(
                             text = stringResource(R.string.create_travel_add_new_day)
                         ) {
                             focusManager.clearFocus()
-                            viewModel.addDay()
+                            onEvent(
+                                CreateTravelUiEvent.OnDayAdded(
+                                    dayTitle = context.getString(
+                                        R.string.create_travel_day_placeholder
+                                    )
+                                )
+                            )
                         }
                     }
                 }
@@ -451,5 +433,16 @@ fun CreateTravelScreen(
 @Preview
 @Composable
 fun CreateTravelScreenPreview(modifier: Modifier = Modifier) {
-    CreateTravelScreen(onTravelDeleted = {}, onTravelCreated = {})
+    CreateTravelScreen(
+        modifier = modifier,
+        uiState = CreateTravelUiState(
+            travelName = "João Pessoa 2025",
+            travels = listOf(
+                TravelType.Day(0, "Dia 1"),
+                TravelType.Activity(0, 0, "Ir para a praia"),
+                TravelType.Day(0, "Dia 2"),
+                TravelType.Activity(0, 0, "Comer em um bom restaurante")
+            )
+        ),
+        onEvent = {})
 }

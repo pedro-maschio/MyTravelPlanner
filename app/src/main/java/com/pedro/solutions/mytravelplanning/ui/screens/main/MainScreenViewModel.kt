@@ -3,7 +3,6 @@ package com.pedro.solutions.mytravelplanning.ui.screens.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pedro.solutions.mytravelplanning.data.repository.TravelRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -11,9 +10,11 @@ import kotlinx.coroutines.launch
 
 class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(MainScreenUiState())
-    private val _uiEvent = MutableSharedFlow<MainScreenUiEvent>()
     val uiState = _uiState.asStateFlow()
-    val uiEvent = _uiEvent
+
+    init {
+        loadTravels()
+    }
 
     fun loadTravels() = viewModelScope.launch {
         showLoading()
@@ -118,21 +119,5 @@ class MainScreenViewModel(val repository: TravelRepository) : ViewModel() {
     fun updateQuery(query: String) {
         _uiState.update { it.copy(searchTerm = query) }
         updateSearchedTravels()
-    }
-
-    fun goBack() {
-        emitGoBack()
-    }
-
-    fun openCreateTravelScreen(travelId: Long) {
-        emitOpenCreateTravelScreen(travelId)
-    }
-
-    private fun emitGoBack() = viewModelScope.launch {
-        _uiEvent.emit(MainScreenUiEvent.GoBack)
-    }
-
-    private fun emitOpenCreateTravelScreen(travelId: Long) = viewModelScope.launch {
-        _uiEvent.emit(MainScreenUiEvent.OpenCreateTravelScreen(travelId))
     }
 }
